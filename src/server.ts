@@ -165,6 +165,52 @@ app.get("/api/runs/:id/report.html", (req, res) => {
   res.type("html").send(reportHtml(run));
 });
 
+
+// ---- comment detail (wireframe screen 3): register row + anchor + before/after excerpts ----
+app.get("/api/runs/:id/comments/:num", (req, res) => {
+  const run = store.get(req.params.id);
+  if (!run) return res.status(404).json({ error: "unknown run" });
+  const num = parseInt(req.params.num, 10);
+  const comment = run.comments.find((c) => c.number === num);
+  if (!comment) return res.status(404).json({ error: "unknown comment" });
+  const anchor = run.anchors.find((a) => a.commentNumber === num);
+  const ai = anchor?.anchorIndex ?? null;
+  const hunks = run.diff
+    .filter((h) => (ai !== null && h.beforeIndex !== undefined ? Math.abs(h.beforeIndex - ai) <= 1 : false))
+    .map((h) => ({ id: h.id, kind: h.kind, beforeText: h.beforeText ?? "", afterText: h.afterText ?? "" }));
+  const beforeText = ai !== null ? run.before.blocks[ai]?.text ?? "" : "";
+  // best-effort counterpart block: nearest hunk's afterIndex, else same index
+  let afterIndex: number | null = null;
+  const near = hunks[0];
+  if (near) {
+    const h = run.diff.find((x) => x.id === near.id);
+    afterIndex = h?.afterIndex ?? null;
+  }
+  const afterText =
+    afterIndex !== null
+      ? run.after.blocks[afterIndex]?.text ?? ""
+      : ai !== null
+        ? run.after.blocks[ai]?.text ?? ""
+        : "";
+  res.json({
+    comment,
+    anchor: anchor ? { index: ai, method: anchor.method } : null,
+    hunks,
+    beforeText,
+    afterText,
+    result: run.tasks.flatMap((t) => t.results).find((r) => r.commentNumber === num) ?? null,
+  });
+});
+
+// ---- export (wireframe screen 5) ----
+app.get("/api/runs/:id/export.json", (req, res) => {
+  const run = store.get(req.params.id);
+  if (!run) return res.status(404).json({ error: "unknown run" });
+  res.setHeader("Content-Disposition", `attachment; filename="${run.runId}-report.json"`);
+  const { before, after, ...rest } = run;
+  res.json({ ...rest, documents: { before: before.fileName, after: after.fileName } });
+});
+
 app.get("/api/runs/:id/transcript/:taskId", (req, res) => {
   const p = store.transcriptPath(req.params.id, req.params.taskId);
   if (!fs.existsSync(p)) return res.status(404).json({ error: "no transcript" });
