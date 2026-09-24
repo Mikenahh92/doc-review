@@ -104,7 +104,7 @@ app.post("/api/runs", async (req, res) => {
     const beforePath = dec(b.before, "before.docx");
     const afterPath = dec(b.after, "after.docx");
     const registerPath = dec(b.register, "comments.xlsx");
-    const { run, warnings } = buildRun(
+    const { run, warnings } = await buildRun(
       fs.readFileSync(beforePath),
       fs.readFileSync(afterPath),
       fs.readFileSync(registerPath),

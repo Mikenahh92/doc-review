@@ -23,13 +23,14 @@ function fail(msg: string): never {
 }
 
 async function main() {
+  // placeholder-anchor
   // ---- fixtures exist? ----
   for (const f of ["before.docx", "after.docx", "comments.xlsx"]) {
     if (!fs.existsSync(path.join(FIX, f))) fail(`missing fixture ${f} — run: npm run fixtures`);
   }
 
   // ---- pre-pass + plan ----
-  const { run, warnings } = buildRun(
+  const { run, warnings } = await buildRun(
     fs.readFileSync(path.join(FIX, "before.docx")),
     fs.readFileSync(path.join(FIX, "after.docx")),
     fs.readFileSync(path.join(FIX, "comments.xlsx")),
@@ -195,3 +196,21 @@ async function main() {
 }
 
 main().catch((e) => fail(e?.stack ?? String(e)));
+  // ---- format coverage: markdown pair + pdf parse ----
+  {
+    const mdRun = await buildRun(
+      fs.readFileSync(path.join(FIX, "before.md")),
+      fs.readFileSync(path.join(FIX, "after.md")),
+      fs.readFileSync(path.join(FIX, "comments-plain.xlsx")),
+      { before: "before.md", after: "after.md", register: "comments-plain.xlsx" }
+    );
+    if (mdRun.run.summary.commentCount !== 4) fail(`md run expected 4 comments, got ${mdRun.run.summary.commentCount}`);
+    if (mdRun.run.summary.hunkCount < 2) fail(`md run expected >=2 hunks, got ${mdRun.run.summary.hunkCount}`);
+    console.log("✓ markdown pair: 4 comments, " + mdRun.run.summary.hunkCount + " hunks");
+    const { parsePdf } = await import("../src/prepass/pdf.js");
+    const pAfter = await parsePdf("after.pdf", fs.readFileSync(path.join(FIX, "after.pdf")));
+    if (!pAfter.blocks.some((b) => b.text.includes("IP67"))) fail("pdf parse missed IP67 text");
+    console.log("✓ pdf pair: parsed " + pAfter.blocks.length + " blocks, found IP67");
+  }
+
+

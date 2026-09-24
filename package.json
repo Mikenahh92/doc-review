@@ -1,7 +1,7 @@
 {
-  "name": "hengelo-doc-review-prototype",
+  "name": "doc-review",
   "version": "0.1.0",
-  "description": "Prototype: validation of reviewed documents \u2014 backend + pi agent runtime + tool bridge",
+  "description": "Prototype: validation of reviewed documents — backend + pi agent runtime + tool bridge",
   "type": "module",
   "scripts": {
     "build": "tsc",
@@ -16,6 +16,7 @@
     "@sinclair/typebox": "^0.34.52",
     "adm-zip": "^0.5.16",
     "express": "^5.1.0",
+    "pdfjs-dist": "^4.10.38",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

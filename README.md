@@ -1,88 +1,82 @@
-# Document Review Validation Tool — Working Prototype
+# doc-review (ReWork Check)
 
 Validates human rework: compares the **before-review document**, the **after-review document**
 and the **comments register (XLSX, pre-filtered: accepted + processed=yes)**, and produces
-per-comment verdicts + a deterministic report. The agent never edits anything.
+per-comment verdicts + a deterministic report. **The agent never edits anything.**
 
-Implements the v2 architecture (`../hengelo-doc-review-architecture.md`) as a walking skeleton:
+- **Inputs:** `.docx`, `.pdf` or `.md` for both documents (same format for the pair), `.xlsx` for
+  the comments register. PDF requires a text-based file (scanned images are not supported).
+- **Architecture:** deterministic pre-pass (parse → anchor every comment → aligned diff → `[auto]`
+  doc checks) builds the complete run map before any LLM task starts. Verify agents work per task
+  through guarded tools; the verdict is computed deterministically from collected results — never
+  by the agent. Per-task JSONL transcripts give a full audit trail.
+- **Agent runtime:** [pi](https://github.com/badlogic/pi-mono) sessions — one fresh session per
+  task. Runs against any OpenAI-compatible endpoint (remote), an Ollama server (air-gapped), or a
+  deterministic faux provider for model-free tests.
+- **Resumability:** parallel worker pool with per-task attempts; guarded completion refuses to
+  finish until every comment has a verdict.
 
-- **Backend (Node + TypeScript)** — pre-pass (docx parse, XLSX normalize, anchoring, aligned
-  diff, `[auto]` DOC checks), run store with JSONL audit transcripts, guards, report rendering,
-  HTTP API + minimal UI.
-- **pi as agent runtime** (`@earendil-works/pi-agent-core` + `pi-ai`) — one agent session per
-  task. **The backend calls pi (`spawnAgent`), and the pi agent calls tools that are connected
-  straight back into the backend API** (`src/agent/tools.ts`). State is only ever written by the
-  app after validation — pi is transport, the app is bouncer.
-- **Deterministic, model-server-free end-to-end test** via pi-ai's faux provider
-  (`npm run e2e`) — the scripted "oracle" follows the system prompt workflow: `getDiff` →
-  `writeResult` per comment → guarded `completeTask`.
+## Run in Docker
 
-## Quick start
-
-```bash
-npm install
-npm run fixtures   # generates test/fixtures/{before.docx, after.docx, comments.xlsx}
-npm run e2e        # full pipeline, no model server needed (faux provider)
-npm start          # HTTP API + UI on http://localhost:3000 (MODEL_MODE=faux default)
+```sh
+docker run -d --name doc-review -p 3000:3000 \
+  -e MODEL_MODE=remote \
+  -e MODEL_BASE_URL=https://api.example.com/v1 \
+  -e MODEL_ID=your-model \
+  -e MODEL_API_KEY=your-key \
+  -v doc-review-runs:/app/runs \
+  ghcr.io/mikenahh92/doc-review:latest
+# UI: http://localhost:3000
 ```
 
-## Real local model (Ollama / LM Studio)
+## Run in Podman
 
-```bash
-MODEL_MODE=ollama MODEL_ID=qwen3:14b MODEL_BASE_URL=http://localhost:11434/v1 npm start
+```sh
+podman run -d --name doc-review -p 3000:3000 \
+  -e MODEL_MODE=ollama \
+  -e MODEL_BASE_URL=http://host.containers.internal:11434/v1 \
+  -e MODEL_ID=llama3.1 \
+  -v doc-review-runs:/app/runs \
+  ghcr.io/mikenahh92/doc-review:latest
 ```
 
-Wiring follows pi's documented custom-provider pattern (`openai-completions` API against an
-OpenAI-compatible endpoint) — see `src/agent/runtime.ts`. Fully air-gapped: no egress beyond
-the configured endpoint.
+Podman notes:
+- Runs rootless by default; the container needs no special privileges.
+- Reaching an Ollama server on the host uses `host.containers.internal` (Docker's
+  `host.docker.internal` does not exist in Podman).
+- The image is also fully usable with `podman load` from an exported OCI archive for
+  air-gapped installs: `podman save --format oci-archive ghcr.io/mikenahh92/doc-review -o doc-review.tar`
+  on a connected machine, then `podman load -i doc-review.tar` on the target.
 
-## Layout
+## Model settings
 
-```
-src/
-  types.ts             domain types (verdicts, tasks, findings) — runtime-agnostic
-  prepass/
-    docx.ts            structural docx parsing (blocks: paragraphs/headings/tables)
-    register.ts        comments XLSX → typed records + export-scope sanity check
-    diff.ts            LCS-aligned block diff (before ↔ after)
-    anchor.ts          comment anchoring: location type+ordinal, content fallback
-    index.ts           buildRun: full run snapshot + [auto] DOC-* checks
-  store.ts             in-memory + JSON runs, per-task JSONL tool-call transcript
-  agent/
-    runtime.ts         SWAP BOUNDARY — the only module that knows pi exists
-    prompts.ts         XML-tag system prompts (from hengelo-doc-review-prompts.md)
-    tools.ts           tool bridge: getOverview/getDiff/getOriginalExcerpt/getReviewedExcerpt/
-                       searchGlobal/writeResult/writeValidation/completeTask → backend API
-  orchestrator.ts      plan tasks → one pi session per task → guards → auto-resume
-  report.ts            deterministic verdict rollup + JSON/HTML reports
-  server.ts            express API + minimal UI
-test/
-  make-fixtures.ts     generates the docx pair + register
-  e2e.ts               scripted-model end-to-end test (incl. guard rejection test)
+All runtime settings are editable in the UI (⚙ settings): mode (`remote` / `ollama` / `faux`),
+model id (with live model list fetched from the endpoint's `/models`), base URL, API key,
+parallel tasks, and attempts per task. They are persisted to `settings.json` inside the
+container; environment variables act as defaults, so a fully env-configured deployment never
+needs the UI.
+
+## Local development
+
+```sh
+npm ci
+npm run build
+npm run fixtures    # small docx/md/pdf fixture pairs + comments registers
+npm run benchmark   # 60-page benchmark set (test/fixtures/bench) with ground truth
+npm run e2e         # full end-to-end without a model server (faux provider oracle)
+npm start           # API + UI on :3000
 ```
 
-## Guards (enforced app-side, told in the prompt)
+## API
 
-- `writeResult` — verdict must be one of the 4-verdict enum; evidence non-empty; comment must
-  be in the task's scope.
-- `completeTask` — **rejected** unless every comment in scope has a verdict; agent receives a
-  structured error and must fix its output.
-- Run verdict — computed deterministically from verdicts + auto-checks
-  (`missing`/`incorrectly_applied`/violation ⇒ `needs_changes`). Never the agent's call.
+- `POST /api/runs` — `{ before:{filename,contentB64}, after:{...}, register:{...} }` → `{runId}`
+- `GET /api/runs` · `GET /api/runs/:id` — list/detail (tasks, verdicts, findings)
+- `GET /api/runs/:id/comments/:num` — register row + anchor + before/after excerpts + verdict
+- `GET /api/runs/:id/report.html` · `/api/runs/:id/export.json` · `/api/runs/:id/transcript/:taskId`
+- `GET/PUT /api/settings` · `GET /api/settings/models`
 
-## Known prototype limits (deliberate)
+## Benchmark
 
-- PDF input not implemented (docx only); `.doc` needs LibreOffice headless conversion.
-- Page numbers are heuristic (blocks/45); revision numbers not yet read from footers —
-  the DOC-2 auto-check is a placeholder.
-- Anchoring: exact block index or content fallback; real version needs wider windows +
-  fuzzy content matching (comment relocation, QAM story 8).
-- Layout-validator agent is scaffolded (prompt + tools) but not yet scheduled in the
-  orchestrator; ruleset loading not wired.
-- Plan phase is deterministic grouping (≤10 comments/task); agent-driven planning is the
-  next step.
-- SQLite → JSON files; concurrency → sequential queue.
-
-Swap boundary: everything pi-specific lives in `src/agent/runtime.ts` (~90 lines). Replacing
-pi with another runtime — or running it as a sidecar from a Python backend — is a contained
-change; the tools, guards, store and prompts are runtime-agnostic.
+`test/fixtures/bench/` contains a 60-page document pair + 25-comment register with mixed edit
+outcomes (correct / wrong / missing) and `ground_truth.json` for scoring. Latest container run
+(glm-5.3-flash): 25/25 correct verdicts in ~4 minutes.

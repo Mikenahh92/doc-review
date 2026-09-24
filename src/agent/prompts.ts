@@ -1,6 +1,6 @@
 // System prompts — XML-tag style, v3: PLANNER + two execution prompts (verifier, layout).
 // Planning and execution are strictly separated; no review pass — each session ends with
-// guarded completion. Distilled from hengelo-doc-review-prompts.md.
+// guarded completion. XML-tagged verifier and completer prompts.
 
 export const PLANNER_SYSTEM_PROMPT = `<role>
 You are the planning agent for a document rework validation run. You read the run context

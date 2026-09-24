@@ -1,4 +1,4 @@
-# doc-review (ReWork Check) — Hengelo-portable container.
+# doc-review (ReWork Check) — portable, air-gap-friendly container.
 # Model config via env (MODEL_MODE/MODEL_ID/MODEL_BASE_URL/MODEL_API_KEY) or the
 # settings UI (settings.json). Runs + uploads persisted in volumes.
 FROM node:20-slim

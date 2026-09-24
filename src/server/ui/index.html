@@ -126,8 +126,8 @@ async function renderNew(){
   const runs=await api("/api/runs").catch(()=>[]);
   $("#view").innerHTML=`
   <div class="card"><h2>Start validation run</h2>
-    <div class="up" id="before"><b>📄 Original document</b><span class="meta">drop or click — .docx</span><input type="file" accept=".docx"></div>
-    <div class="up" id="after"><b>📄 Reviewed document</b><span class="meta">drop or click — .docx</span><input type="file" accept=".docx"></div>
+    <div class="up" id="before"><b>📄 Original document</b><span class="meta">drop or click — .docx / .pdf / .md</span><input type="file" accept=".docx"></div>
+    <div class="up" id="after"><b>📄 Reviewed document</b><span class="meta">drop or click — .docx / .pdf / .md</span><input type="file" accept=".docx"></div>
     <div class="up" id="register"><b>📊 Comments register (XLSX)</b><span class="meta">drop or click — .xlsx</span><input type="file" accept=".xlsx"></div>
     <div class="note">Pre-pass will parse both documents, anchor every comment row, and compute the aligned diff before any agent task starts.</div>
     <button class="btn" onclick="newRun()">Run pre-pass &amp; plan</button>

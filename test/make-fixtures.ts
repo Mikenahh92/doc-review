@@ -164,3 +164,78 @@ XLSX.utils.book_append_sheet(wb, ws, "Comments");
 XLSX.writeFile(wb, path.join(OUT, "comments.xlsx"));
 
 console.log("fixtures written to", OUT);
+
+// ---- plain-text fixture set (works for BOTH .md and .pdf — same logical structure) ----
+// no headings/tables so paragraph ordinals are identical in markdown and PDF parsing.
+const plainBefore = [
+  "Product specification for the data acquisition unit.",
+  "The enclosure shall be sealed against water ingress.",
+  "Operating temperature range is -20 to +60 degrees Celsius.",
+  "The sensor shall report measurements every 100 milliseconds.",
+  "Maintenance: the unit must be serviced annually by qualified personnel.",
+  "Deprecated: firmware version 1.x is no longer supported and should be avoided.",
+  "Accuracy of the measurement chain is ±5 %.",
+  "The unit connects via RS-485 at 115200 baud.",
+  "Storage temperature range is -30 to +70 degrees Celsius.",
+  "End of document.",
+];
+const plainAfter = [
+  plainBefore[0],
+  "The enclosure shall be sealed against water ingress and dust according to IP67.",   // c1 applied
+  plainBefore[2],
+  plainBefore[3],                                                                       // c2 missing
+  plainBefore[4],
+  "Firmware version 2.x or later is required for this product.",                       // c4 applied
+  "Accuracy of the measurement chain is ±5 % (full scale).",                            // c3 applied
+  plainBefore[7],
+  plainBefore[8],
+  plainBefore[9],
+];
+fs.writeFileSync(path.join(OUT, "before.md"), plainBefore.map((l) => l + "\n").join(""));
+fs.writeFileSync(path.join(OUT, "after.md"), plainAfter.map((l) => l + "\n").join(""));
+
+// ---- minimal raw PDF writer (no deps): one page, Helvetica, one Tj per line ----
+function makePdf(lines: string[]): Buffer {
+  const esc = (s: string) => s.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+  let content = "BT\n/F1 11 Tf\n14 TL\n72 760 Td\n";
+  for (const l of lines) content += `(${esc(l)}) Tj T*\n`;
+  content += "ET";
+  const objs = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    `<< /Length ${Buffer.byteLength(content)} >>\nstream\n${content}\nendstream`,
+  ];
+  let pdf = "%PDF-1.4\n";
+  const offsets: number[] = [];
+  objs.forEach((o, i) => {
+    offsets.push(Buffer.byteLength(pdf));
+    pdf += `${i + 1} 0 obj\n${o}\nendobj\n`;
+  });
+  const xrefStart = Buffer.byteLength(pdf);
+  pdf += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n`;
+  for (const off of offsets) pdf += String(off).padStart(10, "0") + " 00000 n \n";
+  pdf += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF`;
+  return Buffer.from(pdf, "utf8");
+}
+fs.writeFileSync(path.join(OUT, "before.pdf"), makePdf(plainBefore));
+fs.writeFileSync(path.join(OUT, "after.pdf"), makePdf(plainAfter));
+
+// register for the plain set: paragraph ordinals 2 (c1), 4 (c2), 7 (c3), 6 (c4)
+const plainRow = (n: number, ord: number, comment: string, reply: string, type = "Author") => ({
+  Number: n, document: "Product Specification", "page number": 1,
+  location: "Paragraph", "location number": ord,
+  comment, "comment type": type, "reply by author": reply, "external reply": "",
+  "external participant": "", participant: "R. Jansen", status: "accepted", processed: "yes",
+});
+const plainRows = [
+  plainRow(1, 2, "Please specify the degree of protection of the enclosure (IP rating).", "Added IP67 rating."),
+  plainRow(2, 4, "Change the reporting interval to 250 ms.", "Checked — interval already correct."),
+  plainRow(3, 7, "Add '(full scale)' to the accuracy value.", "Clarified the accuracy reference."),
+  plainRow(4, 6, "Remove the deprecated firmware statement and require firmware 2.x.", "Reworded."),
+];
+const wb2 = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb2, XLSX.utils.json_to_sheet(plainRows), "Comments");
+XLSX.writeFile(wb2, path.join(OUT, "comments-plain.xlsx"));
+console.log("plain fixtures (md + pdf + comments-plain.xlsx) written");

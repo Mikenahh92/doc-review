@@ -1,6 +1,8 @@
 // Pre-pass entry point: build the complete run snapshot from the three inputs. No LLM anywhere.
 
 import { parseDocx } from "./docx.js";
+import { parseMarkdown } from "./markdown.js";
+import { parsePdf } from "./pdf.js";
 import { assertExportScope, parseRegister } from "./register.js";
 import { diffDocs } from "./diff.js";
 import { anchorComments } from "./anchor.js";
@@ -37,14 +39,19 @@ function autoDocChecks(before: ParsedDoc, after: ParsedDoc): Finding[] {
   return findings;
 }
 
-export function buildRun(
+export async function buildRun(
   beforeBuffer: Buffer,
   afterBuffer: Buffer,
   registerBuffer: Buffer,
   fileNames: { before: string; after: string; register: string }
-): { run: Run; warnings: string[] } {
-  const before = parseDocx(fileNames.before, beforeBuffer);
-  const after = parseDocx(fileNames.after, afterBuffer);
+): Promise<{ run: Run; warnings: string[] }> {
+  const parse = async (name: string, buf: Buffer) => {
+    if (name.toLowerCase().endsWith(".md")) return parseMarkdown(name, buf);
+    if (name.toLowerCase().endsWith(".pdf")) return parsePdf(name, buf);
+    return parseDocx(name, buf);
+  };
+  const before = await parse(fileNames.before, beforeBuffer);
+  const after = await parse(fileNames.after, afterBuffer);
   const comments = parseRegister(registerBuffer);
   const warnings = assertExportScope(comments);
   const diff = diffDocs(before, after);
