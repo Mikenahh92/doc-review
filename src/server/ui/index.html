@@ -95,15 +95,23 @@ async function refresh(){if(!current)return;try{
   if(openCommentNum!=null&&tab==="verdicts"&&prevStatus===run.status)return;
   render()}catch(e){stopPoll()}}
 let listRuns=[];
-async function refreshList(){try{listRuns=await api("/api/runs");if(view==="list")render()}catch(e){}}
+async function refreshList(){try{listRuns=await api("/api/runs");if(view==="list"&&!showNew)render()}catch(e){}}
 const OKEXT={before:["docx","pdf","md"],after:["docx","pdf","md"],register:["xlsx"]};
-function pick(id){const el=$("#"+id);el.onclick=()=>el.querySelector("input").click();
-  el.querySelector("input").onchange=()=>{const f=el.querySelector("input").files[0];
-    const ext=f?f.name.split(".").pop().toLowerCase():"";
-    if(f&&!OKEXT[id].includes(ext)){el.classList.remove("filled");el.dataset.has="";el.querySelector("input").value="";
-      el.querySelector(".meta").textContent=`unsupported .${ext} — expected ${OKEXT[id].join(" / ")}`;toast(`.${ext} not supported for ${id} (use ${OKEXT[id].join(" / ")})`);return}
-    el.classList.add("filled");el.querySelector(".meta").textContent=f?f.name+" · "+(f.size/1024).toFixed(0)+" KB ✓":"";
-    el.dataset.has=f?"1":""}}
+function handleFile(id,el,f){
+    if(!f){el.classList.remove("filled");el.dataset.has="";return}
+    const ext=f.name.split(".").pop().toLowerCase();
+    if(!OKEXT[id].includes(ext)){el.classList.remove("filled");el.dataset.has="";
+      el.querySelector(".meta").textContent=`unsupported .${ext} — expected ${OKEXT[id].join(" / ")}`;
+      toast(`.${ext} not supported for ${id} (use ${OKEXT[id].join(" / ")})`);return}
+    const dt=new DataTransfer();dt.items.add(f);el.querySelector("input").files=dt.files;
+    el.classList.add("filled");el.querySelector(".meta").textContent=f.name+" · "+(f.size/1024).toFixed(0)+" KB ✓";
+    el.dataset.has="1"}
+function pick(id){const el=$("#"+id);
+  el.onclick=e=>{if(e.target.tagName!=="INPUT")el.querySelector("input").click()};
+  el.querySelector("input").onchange=e=>handleFile(id,el,e.target.files[0]);
+  el.addEventListener("dragover",e=>{e.preventDefault();el.classList.add("drag")});
+  el.addEventListener("dragleave",()=>el.classList.remove("drag"));
+  el.addEventListener("drop",e=>{e.preventDefault();el.classList.remove("drag");handleFile(id,el,e.dataTransfer.files[0])})}
 async function newRun(){
   const need=[["before","original"],["after","reviewed"],["register","comments register"]];
   for(const[id,n]of need)if(!$("#"+id).dataset.has)return toast("select the "+n+" file first");
