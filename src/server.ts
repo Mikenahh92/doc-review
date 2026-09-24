@@ -144,6 +144,7 @@ app.get("/api/runs/:id", (req, res) => {
     status: run.status,
     verdict: run.verdict ?? rollupVerdictSafe(run),
     summary: run.summary,
+    commentCount: run.comments.length,
     autoChecks: run.autoChecks,
     completionSummary: run.completionSummary ?? null,
     tasks: run.tasks.map((t) => ({
@@ -157,6 +158,28 @@ app.get("/api/runs/:id", (req, res) => {
       note: t.note ?? null,
     })),
   });
+});
+
+// live agent activity: every tool call every agent made, across tasks
+app.get("/api/runs/:id/activity", (req, res) => {
+  const run = store.get(req.params.id);
+  if (!run) return res.status(404).json({ error: "unknown run" });
+  const out: any[] = [];
+  for (const t of run.tasks) {
+    const p = store.transcriptPath(run.runId, t.taskId);
+    if (!fs.existsSync(p)) continue;
+    for (const line of fs.readFileSync(p, "utf8").split("\n")) {
+      if (!line.trim()) continue;
+      try {
+        const e = JSON.parse(line);
+        const args = e.args ? JSON.stringify(e.args).slice(0, 220) : undefined;
+        out.push({ ts: e.ts, task: t.taskId, tool: e.tool ?? "?", args, reason: e.reason });
+      } catch { /* skip */
+      }
+    }
+  }
+  out.sort((a, b) => (a.ts ?? "").localeCompare(b.ts ?? ""));
+  res.json({ activity: out.slice(-400) });
 });
 
 app.get("/api/runs/:id/report.html", (req, res) => {

@@ -16,6 +16,15 @@ jobs:
       - run: npm run build
       - run: npm run fixtures
       - run: npm run e2e
+      - name: ui-syntax
+        run: |
+          python3 - << 'PY'
+          import re
+          html = open('src/server/ui/index.html').read()
+          for i,s in enumerate(re.findall(r'<script>(.*?)</script>', html, re.S)):
+              open(f'/tmp/ui-{i}.js','w').write(s)
+          PY
+          for f in /tmp/ui-*.js; do node --check "$f"; done
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io

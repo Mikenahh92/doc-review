@@ -95,7 +95,11 @@ function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>b
   clearInterval(poll);render();
   if(run&&(run.status==="running"||run.status==="planned"))poll=setInterval(refresh,2000)}
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
-async function refresh(){if(!current)return;try{run=await api("/api/runs/"+current);render()}catch(e){clearInterval(poll)}}
+let activity=null;
+async function refresh(){if(!current)return;try{
+  run=await api("/api/runs/"+current);
+  activity=(await api(`/api/runs/${current}/activity`).catch(()=>null))?.activity??activity;
+  render()}catch(e){clearInterval(poll)}}
 function pick(id,label){const el=$("#"+id);el.onclick=()=>el.querySelector("input").click();
   el.querySelector("input").onchange=()=>{const f=el.querySelector("input").files[0];
     el.classList.add("filled");el.querySelector(".meta").textContent=f?f.name+" · "+(f.size/1024).toFixed(0)+" KB ✓":"";
@@ -147,16 +151,20 @@ function renderMonitor(){
   <div class="card"><h2>Run ${run.runId} — ${run.status==="done"?"done":run.status}</h2>
     <div class="task">✅ Pre-pass — ${s.commentCount} comments anchored (${s.anchoredCount}) · ${s.hunkCount} diff hunks<span class="meta">no LLM</span><div class="prog"><i style="width:100%"></i></div></div>
     <div class="task">✅ Plan — ${run.tasks.length} agent task(s)<span class="meta">planner session · writeTaskPlan</span><div class="prog"><i style="width:100%"></i></div></div>
-    ${run.tasks.map(t=>{const p=t.scope.length?t.results.length/t.scope.length:0;
+    ${!run.tasks.length?`<div class="task">🔄 Planner agent<span class="meta">creating verify tasks…</span><div class="prog"><i style="width:40%"></i></div></div>`:
+      run.tasks.map(t=>{const p=t.scope.length?t.results.length/t.scope.length:0;
       const ic=t.status==="done"?"✅":t.status==="in_progress"?"🔄":t.status==="blocked"?"⛔":"◻";
       return `<div class="task">${ic} ${t.id} — ${t.title}<span class="meta">${t.results.length}/${t.scope.length} verdicts${t.note?" · "+t.note.slice(0,60):""}</span><div class="prog"><i style="width:${Math.round(p*100)}%"></i></div></div>`}).join("")}
-    <div class="note">Auto-resume: a crashed task is respawned; nothing is lost. Guarded completion refuses until every comment has a verdict.</div>
+    <div class="label" style="margin:16px 0 6px">Agent activity (live)</div>
+    <div id="activity" style="border:1px solid #dde;border-radius:8px;padding:8px;max-height:260px;overflow-y:auto;font-size:11.5px;background:#fafbfe">
+      ${(activity&&activity.length)?activity.map(a=>`<div style="padding:2px 0;border-bottom:1px solid #f0f2f8"><span class="dim">${a.ts.slice(11,19)}</span> <b style="color:#2f6fb0">${a.task}</b> ${a.tool}${a.args?` <span class="dim">${a.args.slice(0,140)}</span>`:""}${a.reason?` <span style="color:#b02020">${String(a.reason).slice(0,120)}</span>`:""}</div>`).join(""):`<span class="dim">waiting for first agent action…</span>`}
+    </div>
     ${run.tasks.length===1?`<button class="btn ghost" onclick="window.open('/api/runs/${run.runId}/transcript/${run.tasks[0].id}')">Open transcript</button>`:""}
     ${run.completionSummary?`<div class="sel">📝 ${run.completionSummary}</div>`:""}
   </div>`;
 }
 async function renderVerdicts(){
-  const rs=allResults();if(!rs.length&&!run.comments.length){$("#view").innerHTML=`<div class="card"><div class="empty">no comments</div></div>`;return}
+  const rs=allResults();if(!rs.length&&!run.commentCount){$("#view").innerHTML=`<div class="card"><div class="empty">no comments</div></div>`;return}
   const counts={all:rs.length,correctly_applied:rs.filter(r=>r.verdict==="correctly_applied").length,
     incorrectly_applied:rs.filter(r=>r.verdict==="incorrectly_applied").length,
     missing:rs.filter(r=>r.verdict==="missing").length,needs_user:rs.filter(r=>r.verdict==="needs_user").length};
@@ -220,8 +228,9 @@ function esc(t){return (t??"").toString().replace(/&/g,"&amp;").replace(/</g,"&l
 function renderReport(){
   const rs=allResults(),ok=rs.filter(r=>r.verdict==="correctly_applied").length,nu=rs.filter(r=>r.verdict==="needs_user").length,prob=rs.length-ok-nu;
   const v=run.verdict;
+  const pending=run.status!=="done";
   $("#view").innerHTML=`
-  <div class="card"><h2>Run ${run.runId} — verdict: <span style="color:${v==="approved"?"#1e7a2e":"#b02020"}">${v??run.status}</span></h2>
+  <div class="card"><h2>Run ${run.runId} — verdict: <span style="color:${pending?"#a06b00":v==="approved"?"#1e7a2e":"#b02020"}">${pending?"pending — run in progress":v}</span></h2>
     <div class="kpis">
       <div class="kpi"><b>${ok}</b><span>correctly applied</span></div>
       <div class="kpi"><b style="color:#b02020">${prob}</b><span>problems found</span></div>
