@@ -3,6 +3,7 @@ dist
 runs
 runs-test
 uploads
-test/fixtures
+test/fixtures/*
+!test/fixtures/bench/
 settings.json
 *.log

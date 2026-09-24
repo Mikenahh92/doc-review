@@ -1,0 +1,157 @@
+{
+  "source": "npm run benchmark",
+  "pages": 60,
+  "blocks": 2700,
+  "comments": [
+    {
+      "number": 2,
+      "expected": "correctly_applied",
+      "page": 3,
+      "type": "paragraph"
+    },
+    {
+      "number": 4,
+      "expected": "correctly_applied",
+      "page": 7,
+      "type": "paragraph"
+    },
+    {
+      "number": 5,
+      "expected": "correctly_applied",
+      "page": 9,
+      "type": "paragraph"
+    },
+    {
+      "number": 6,
+      "expected": "correctly_applied",
+      "page": 11,
+      "type": "paragraph"
+    },
+    {
+      "number": 7,
+      "expected": "correctly_applied",
+      "page": 13,
+      "type": "paragraph"
+    },
+    {
+      "number": 8,
+      "expected": "correctly_applied",
+      "page": 15,
+      "type": "paragraph"
+    },
+    {
+      "number": 9,
+      "expected": "correctly_applied",
+      "page": 17,
+      "type": "paragraph"
+    },
+    {
+      "number": 10,
+      "expected": "correctly_applied",
+      "page": 19,
+      "type": "paragraph"
+    },
+    {
+      "number": 11,
+      "expected": "correctly_applied",
+      "page": 21,
+      "type": "paragraph"
+    },
+    {
+      "number": 12,
+      "expected": "correctly_applied",
+      "page": 22,
+      "type": "paragraph"
+    },
+    {
+      "number": 13,
+      "expected": "correctly_applied",
+      "page": 24,
+      "type": "paragraph"
+    },
+    {
+      "number": 14,
+      "expected": "correctly_applied",
+      "page": 26,
+      "type": "paragraph"
+    },
+    {
+      "number": 15,
+      "expected": "correctly_applied",
+      "page": 28,
+      "type": "paragraph"
+    },
+    {
+      "number": 17,
+      "expected": "correctly_applied",
+      "page": 32,
+      "type": "paragraph"
+    },
+    {
+      "number": 19,
+      "expected": "incorrectly_applied",
+      "page": 36,
+      "type": "paragraph"
+    },
+    {
+      "number": 20,
+      "expected": "incorrectly_applied",
+      "page": 38,
+      "type": "paragraph"
+    },
+    {
+      "number": 21,
+      "expected": "incorrectly_applied",
+      "page": 40,
+      "type": "paragraph"
+    },
+    {
+      "number": 22,
+      "expected": "incorrectly_applied",
+      "page": 42,
+      "type": "paragraph"
+    },
+    {
+      "number": 23,
+      "expected": "incorrectly_applied",
+      "page": 43,
+      "type": "paragraph"
+    },
+    {
+      "number": 24,
+      "expected": "incorrectly_applied",
+      "page": 45,
+      "type": "paragraph"
+    },
+    {
+      "number": 25,
+      "expected": "missing",
+      "page": 47,
+      "type": "paragraph"
+    },
+    {
+      "number": 26,
+      "expected": "missing",
+      "page": 49,
+      "type": "paragraph"
+    },
+    {
+      "number": 27,
+      "expected": "missing",
+      "page": 51,
+      "type": "paragraph"
+    },
+    {
+      "number": 28,
+      "expected": "missing",
+      "page": 53,
+      "type": "paragraph"
+    },
+    {
+      "number": 30,
+      "expected": "missing",
+      "page": 57,
+      "type": "paragraph"
+    }
+  ]
+}
