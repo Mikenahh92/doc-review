@@ -4,32 +4,29 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,"Segoe UI",sans-serif}
 body{background:#e8eaf0;color:#334;min-height:100vh}
-header{background:#2f3b52;color:#fff;padding:10px 18px;display:flex;align-items:center;gap:14px}
+header{background:#2f3b52;color:#fff;padding:10px 18px;display:flex;align-items:center;gap:12px}
 header h1{font-size:15px;font-weight:600}
-header .run{font-size:12px;color:#9db4d8}
 header .sp{flex:1}
-nav{display:flex;gap:6px}
-nav button{border:none;border-radius:8px;padding:6px 14px;font-size:12.5px;cursor:pointer;background:rgba(255,255,255,.12);color:#cdd9ee;font-weight:500}
-nav button:hover{background:rgba(255,255,255,.22)}
-nav button.on{background:#fff;color:#2f3b52;font-weight:600}
+.gear{background:rgba(255,255,255,.12);border:none;color:#cdd9ee;border-radius:8px;padding:5px 10px;cursor:pointer;font-size:13px}
+.gear:hover{background:rgba(255,255,255,.22)}
 main{max-width:980px;margin:22px auto;padding:0 18px}
 .card{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.12);padding:18px;margin-bottom:18px}
 h2{font-size:16px;color:#223;margin-bottom:12px}
 h3{font-size:13px;color:#223;margin-bottom:8px}
-.sub{color:#667;font-size:12.5px;margin-bottom:14px}
+.sub{color:#667;font-size:12.5px}
 .up{border:2px dashed #b6bfd2;border-radius:8px;padding:14px;margin-bottom:10px;font-size:12px;color:#556;cursor:pointer}
 .up:hover{border-color:#4a90d9}
 .up.filled{border-style:solid;border-color:#4a90d9;background:#f0f6ff}
 .up b{display:block;font-size:13px;color:#223;margin-bottom:2px}
 .up input{display:none}
-.sel{border:1px solid #b6bfd2;border-radius:8px;padding:10px 12px;font-size:12px;margin-bottom:10px;color:#445;background:#fafbfd}
 .btn{background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer}
 .btn:hover{background:#3a7fc2}
 .btn.ghost{background:none;color:#2f6fb0;border:1px solid #2f6fb0}
+.btn.small{padding:5px 13px;font-size:12px}
 .note{background:#fff8e1;border-left:3px solid #f0b429;padding:8px 10px;font-size:11px;color:#665522;margin-bottom:10px}
 table{width:100%;border-collapse:collapse;font-size:11.5px}
 th{text-align:left;color:#778;font-weight:600;border-bottom:1px solid #dde;padding:4px 6px}
-td{border-bottom:1px solid #eef;padding:5px 6px;cursor:default}
+td{border-bottom:1px solid #eef;padding:5px 6px}
 tr.clickable{cursor:pointer}
 tr.clickable:hover{background:#f4f8ff}
 .pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600}
@@ -54,8 +51,15 @@ tr.clickable:hover{background:#f4f8ff}
 .kpi b{font-size:18px;display:block}
 .kpi span{font-size:10px;color:#778}
 .quote{font-style:italic;color:#556}
-.runrow{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #e5e9f2;border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:12.5px}
+.runrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e5e9f2;border-radius:10px;margin-bottom:8px;cursor:pointer;font-size:12.5px}
 .runrow:hover{background:#f4f8ff}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%}
+.dot.done{background:#1e7a2e}.dot.running{background:#2f6fb0}.dot.failed{background:#b02020}
+.back{color:#2f6fb0;cursor:pointer;font-size:12.5px;display:inline-block;margin-bottom:10px}
+.tabs{display:flex;gap:6px;margin:14px 0 0;border-bottom:1px solid #dde}
+.tabs button{border:none;background:none;padding:8px 14px;font-size:12.5px;cursor:pointer;color:#778;font-weight:500;border-bottom:2px solid transparent}
+.tabs button.on{color:#2f6fb0;font-weight:600;border-bottom-color:#2f6fb0}
+.label{font-size:11px;color:#778;text-transform:uppercase;letter-spacing:.06em;margin:14px 0 6px}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;overflow-y:auto;padding:40px 16px}
 .overlay.open{display:block}
 .sheet{max-width:560px;margin:0 auto;background:#fff;border-radius:14px;padding:22px}
@@ -66,41 +70,30 @@ tr.clickable:hover{background:#f4f8ff}
 .hint{font-size:11px;color:#889;margin-top:3px}
 .toast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2f3b52;color:#fff;border-radius:10px;padding:9px 18px;font-size:13px;z-index:99}
 .empty{color:#889;text-align:center;padding:30px;font-size:13px}
-.gear{background:rgba(255,255,255,.12);border:none;color:#cdd9ee;border-radius:8px;padding:5px 10px;cursor:pointer;font-size:13px}
-.gear:hover{background:rgba(255,255,255,.22)}
 </style></head><body>
 <header>
   <h1>Document Review Validation</h1>
-  <span class="run" id="runLabel"></span>
   <span class="sp"></span>
-  <nav id="nav">
-    <button data-v="new" class="on">New Run</button>
-    <button data-v="monitor">Monitor</button>
-    <button data-v="verdicts">Verdicts</button>
-    <button data-v="styling">Styling</button>
-    <button data-v="report">Report</button>
-  </nav>
-  <span style="width:8px"></span>
-  <button class="gear" onclick="openSettings()">⚙</button>
+  <button class="gear" onclick="openSettings()">⚙ settings</button>
 </header>
 <main id="view"></main>
 <div class="toast" id="toast"></div>
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div>
 <script>
 const $=s=>document.querySelector(s);
-let view="new", current=null, run=null, filter="all", poll=null;
+let view="list", current=null, run=null, tab="overview", filter="all", poll=null, activity=null, showNew=false;
 function toast(m){const t=$("#toast");t.textContent=m;t.style.display="block";setTimeout(()=>t.style.display="none",2500)}
 async function api(p,o){const r=await fetch(p,o);const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||r.status);return j}
-function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
-  clearInterval(poll);render();
-  if(run&&(run.status==="running"||run.status==="planned"))poll=setInterval(refresh,2000)}
-document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
-let activity=null;
+function stopPoll(){clearInterval(poll);poll=null}
+function goList(){view="list";current=null;run=null;stopPoll();render();refreshList()}
+async function openRun(id){view="detail";current=id;tab="overview";filter="all";stopPoll();await refresh();render();poll=setInterval(refresh,2000)}
 async function refresh(){if(!current)return;try{
   run=await api("/api/runs/"+current);
   activity=(await api(`/api/runs/${current}/activity`).catch(()=>null))?.activity??activity;
-  render()}catch(e){clearInterval(poll)}}
-function pick(id,label){const el=$("#"+id);el.onclick=()=>el.querySelector("input").click();
+  render()}catch(e){stopPoll()}}
+let listRuns=[];
+async function refreshList(){try{listRuns=await api("/api/runs");if(view==="list")render()}catch(e){}}
+function pick(id){const el=$("#"+id);el.onclick=()=>el.querySelector("input").click();
   el.querySelector("input").onchange=()=>{const f=el.querySelector("input").files[0];
     el.classList.add("filled");el.querySelector(".meta").textContent=f?f.name+" · "+(f.size/1024).toFixed(0)+" KB ✓":"";
     el.dataset.has=f?"1":""}}
@@ -114,102 +107,124 @@ async function newRun(){
     before:{filename:g("before").name,contentB64:await b64(g("before"))},
     after:{filename:g("after").name,contentB64:await b64(g("after"))},
     register:{filename:g("register").name,contentB64:await b64(g("register"))}})});
-    $("#newMsg").textContent="run "+j.runId+" started"+(j.warnings.length?" — "+j.warnings.join("; "):"");
-    current=j.runId;$("#runLabel").textContent="run "+j.runId;await refresh();setView("monitor");
+    $("#newMsg").textContent="";showNew=false;openRun(j.runId)
   }catch(e){$("#newMsg").textContent="";toast("failed: "+e.message)}}
-async function chooseRun(id){current=id;$("#runLabel").textContent="run "+id;await refresh();setView("monitor")}
-async function render(){
-  if(view==="new"){return renderNew()}
-  if(!run){$("#view").innerHTML=`<div class="card"><div class="empty">no run selected — start one in New Run</div></div>`;return}
-  if(view==="monitor")renderMonitor();
-  if(view==="verdicts")renderVerdicts();
-  if(view==="styling")renderStyling();
-  if(view==="report")renderReport();
+function render(){
+  if(view==="list")return renderList();
+  renderDetail();
 }
-async function renderNew(){
-  const runs=await api("/api/runs").catch(()=>[]);
+async function renderList(){
+  const runs=listRuns;
   $("#view").innerHTML=`
-  <div class="card"><h2>Start validation run</h2>
-    <div class="up" id="before"><b>📄 Original document</b><span class="meta">drop or click — .docx / .pdf / .md</span><input type="file" accept=".docx"></div>
-    <div class="up" id="after"><b>📄 Reviewed document</b><span class="meta">drop or click — .docx / .pdf / .md</span><input type="file" accept=".docx"></div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <h2 style="margin:0;flex:1">Runs ${runs.length?`<span class="dim" style="font-weight:400;font-size:12.5px">(${runs.filter(r=>r.status==="running"||r.status==="planned").length} active · ${runs.length} total)</span>`:""}</h2>
+    <button class="btn" onclick="showNew=!showNew;renderList()">＋ New run</button>
+  </div>
+  ${showNew?`<div class="card"><h3>Start validation run</h3>
+    <div class="up" id="before"><b>📄 Original document</b><span class="meta">drop or click — .docx / .pdf / .md</span><input type="file" accept=".docx,.pdf,.md"></div>
+    <div class="up" id="after"><b>📄 Reviewed document</b><span class="meta">drop or click — .docx / .pdf / .md</span><input type="file" accept=".docx,.pdf,.md"></div>
     <div class="up" id="register"><b>📊 Comments register (XLSX)</b><span class="meta">drop or click — .xlsx</span><input type="file" accept=".xlsx"></div>
-    <div class="note">Pre-pass will parse both documents, anchor every comment row, and compute the aligned diff before any agent task starts.</div>
     <button class="btn" onclick="newRun()">Run pre-pass &amp; plan</button>
     <span style="margin-left:10px;font-size:12px" id="newMsg"></span>
-  </div>
-  ${runs.length?`<div class="card"><h3>Previous runs</h3>${runs.map(r=>`<div class="runrow" onclick="chooseRun('${r.runId}')">
-    <span class="pill ${r.status==="done"?"ok":r.status==="failed"?"bad":"warn"}">${r.status}</span>
-    <b>${r.runId}</b><span class="dim">${r.tasksDone} tasks · ${r.comments} comments</span>
-    ${r.verdict?`<span class="pill ${r.verdict==="approved"?"ok":"bad"}">${r.verdict}</span>`:""}
-    <span style="flex:1"></span><span class="dim">${r.createdAt.slice(0,16).replace("T"," ")}</span></div>`).join("")}</div>`:""}`;
-  pick("before");pick("after");pick("register");
+  </div>`:""}
+  ${runs.map(r=>`<div class="runrow" onclick="openRun('${r.runId}')">
+    <span class="dot ${r.status}"></span>
+    <b>${r.runId}</b>
+    <span class="dim">${r.createdAt.slice(0,16).replace("T"," ")}</span>
+    <span class="dim">${r.comments} comments · ${r.tasksDone} tasks</span>
+    <span style="flex:1"></span>
+    ${r.verdict&&r.status==="done"?`<span class="pill ${r.verdict==="approved"?"ok":r.verdict==="needs_user_review"?"user":"bad"}">${r.verdict.replace(/_/g," ")}</span>`:`<span class="pill warn">${r.status==="running"?"in progress":r.status}</span>`}
+  </div>`).join("")||`<div class="card"><div class="empty">no runs yet — start one with ＋ New run</div></div>`}`;
+  if(showNew){pick("before");pick("after");pick("register")}
 }
-function allResults(){return (run?.tasks??[]).flatMap(t=>t.results)}
-function renderMonitor(){
-  const s=run.summary, done=run.tasks.filter(t=>t.status==="done").length;
+function renderDetail(){
+  if(!run){$("#view").innerHTML=`<div class="card"><div class="empty">loading…</div></div>`;return}
+  const running=run.status==="running"||run.status==="planned";
+  const s=run.summary;
+  const pill=running?`<span class="pill warn">in progress</span>`
+    :run.status==="failed"?`<span class="pill bad">failed</span>`
+    :run.verdict==="approved"?`<span class="pill ok">approved</span>`
+    :run.verdict==="needs_user_review"?`<span class="pill user">needs user review</span>`
+    :`<span class="pill bad">${run.verdict??"—"}</span>`;
   $("#view").innerHTML=`
-  <div class="card"><h2>Run ${run.runId} — ${run.status==="done"?"done":run.status}</h2>
-    <div class="task">✅ Pre-pass — ${s.commentCount} comments anchored (${s.anchoredCount}) · ${s.hunkCount} diff hunks<span class="meta">no LLM</span><div class="prog"><i style="width:100%"></i></div></div>
-    <div class="task">✅ Plan — ${run.tasks.length} agent task(s)<span class="meta">planner session · writeTaskPlan</span><div class="prog"><i style="width:100%"></i></div></div>
+  <span class="back" onclick="goList()">← all runs</span>
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <h2 style="margin:0">${run.runId}</h2>${pill}
+      <span style="flex:1"></span>
+      <span class="dim" style="font-size:12px">${run.createdAt.slice(0,16).replace("T"," ")}</span>
+    </div>
+    <div class="sub" style="margin-top:6px">${s.docSummaryBefore} → ${s.docSummaryAfter}</div>
+    <div class="sub">${run.commentCount} comments · ${s.anchoredCount} anchored · ${s.hunkCount} diff hunks · ${run.tasks.length} tasks</div>
+    <div class="tabs">
+      <button class="${tab==="overview"?"on":""}" onclick="tab='overview';render()">Overview</button>
+      <button class="${tab==="verdicts"?"on":""}" onclick="tab='verdicts';render()">Verdicts</button>
+      <button class="${tab==="styling"?"on":""}" onclick="tab='styling';render()">Styling</button>
+      <button class="${tab==="report"?"on":""}" onclick="tab='report';render()">Report</button>
+    </div>
+  </div>
+  <div id="tabbody"></div>`;
+  const el=$("#tabbody");
+  if(tab==="overview")el.innerHTML=htmlOverview();
+  if(tab==="verdicts")el.innerHTML=htmlVerdicts();
+  if(tab==="styling")el.innerHTML=htmlStyling();
+  if(tab==="report")el.innerHTML=htmlReport();
+}
+function htmlOverview(){
+  return `<div class="card">
     ${!run.tasks.length?`<div class="task">🔄 Planner agent<span class="meta">creating verify tasks…</span><div class="prog"><i style="width:40%"></i></div></div>`:
-      run.tasks.map(t=>{const p=t.scope.length?t.results.length/t.scope.length:0;
+    run.tasks.map(t=>{const p=t.scope.length?t.results.length/t.scope.length:0;
       const ic=t.status==="done"?"✅":t.status==="in_progress"?"🔄":t.status==="blocked"?"⛔":"◻";
       return `<div class="task">${ic} ${t.id} — ${t.title}<span class="meta">${t.results.length}/${t.scope.length} verdicts${t.note?" · "+t.note.slice(0,60):""}</span><div class="prog"><i style="width:${Math.round(p*100)}%"></i></div></div>`}).join("")}
-    <div class="label" style="margin:16px 0 6px">Agent activity (live)</div>
-    <div id="activity" style="border:1px solid #dde;border-radius:8px;padding:8px;max-height:260px;overflow-y:auto;font-size:11.5px;background:#fafbfe">
-      ${(activity&&activity.length)?activity.map(a=>`<div style="padding:2px 0;border-bottom:1px solid #f0f2f8"><span class="dim">${a.ts.slice(11,19)}</span> <b style="color:#2f6fb0">${a.task}</b> ${a.tool}${a.args?` <span class="dim">${a.args.slice(0,140)}</span>`:""}${a.reason?` <span style="color:#b02020">${String(a.reason).slice(0,120)}</span>`:""}</div>`).join(""):`<span class="dim">waiting for first agent action…</span>`}
+    ${run.completionSummary?`<div class="note">📝 ${esc(run.completionSummary).slice(0,400)}</div>`:""}
+    <div class="label">Agent activity (live)</div>
+    <div style="border:1px solid #dde;border-radius:8px;padding:8px;max-height:280px;overflow-y:auto;font-size:11.5px;background:#fafbfe">
+      ${(activity&&activity.length)?activity.slice(-120).map(a=>`<div style="padding:2px 0;border-bottom:1px solid #f0f2f8"><span class="dim">${a.ts.slice(11,19)}</span> <b style="color:#2f6fb0">${a.task}</b> ${a.tool}${a.args?` <span class="dim">${esc(a.args).slice(0,140)}</span>`:""}${a.reason?` <span style="color:#b02020">${esc(String(a.reason)).slice(0,120)}</span>`:""}</div>`).join(""):`<span class="dim">waiting for first agent action…</span>`}
     </div>
-    ${run.tasks.length===1?`<button class="btn ghost" onclick="window.open('/api/runs/${run.runId}/transcript/${run.tasks[0].id}')">Open transcript</button>`:""}
-    ${run.completionSummary?`<div class="sel">📝 ${run.completionSummary}</div>`:""}
   </div>`;
 }
-async function renderVerdicts(){
-  const rs=allResults();if(!rs.length&&!run.commentCount){$("#view").innerHTML=`<div class="card"><div class="empty">no comments</div></div>`;return}
+function htmlVerdicts(){
+  const rs=allResults();
   const counts={all:rs.length,correctly_applied:rs.filter(r=>r.verdict==="correctly_applied").length,
     incorrectly_applied:rs.filter(r=>r.verdict==="incorrectly_applied").length,
     missing:rs.filter(r=>r.verdict==="missing").length,needs_user:rs.filter(r=>r.verdict==="needs_user").length};
   const label={all:"all",correctly_applied:"✓ applied",incorrectly_applied:"✗ incorrect",missing:"◦ missing",needs_user:"? needs_user"};
   const shown=rs.filter(r=>filter==="all"||r.verdict===filter);
-  $("#view").innerHTML=`
-  <div class="card"><h2>Per-comment verification</h2>
-    <div class="filters">${Object.keys(counts).map(k=>`<span class="${filter===k?"on":""}" onclick="filter='${k}';renderVerdicts()">${label[k]} ${counts[k]}</span>`).join("")}</div>
+  return `<div class="card"><h3>Per-comment verification</h3>
+    <div class="filters">${Object.keys(counts).map(k=>`<span class="${filter===k?"on":""}" onclick="filter='${k}';render()">${label[k]} ${counts[k]}</span>`).join("")}</div>
     <table><tr><th>#</th><th>Verdict</th><th>Conf</th><th>Evidence</th></tr>
     ${shown.map(r=>`<tr class="clickable" onclick="openComment(${r.commentNumber})"><td><b>${r.commentNumber}</b></td>
       <td><span class="pill ${r.verdict==="correctly_applied"?"ok":r.verdict==="needs_user"?"user":"bad"}">${r.verdict.replace(/_/g," ")}</span></td>
-      <td class="dim">${r.confidence}</td><td>${(r.evidence||"").slice(0,90)}</td></tr>`).join("")||`<tr><td colspan="4" class="dim">nothing in this filter</td></tr>`}
-    </table>
-    ${!rs.length?`<div class="empty">no verdicts yet — ${run.status}</div>`:""}
-  </div><div id="detail"></div>`;
+      <td class="dim">${r.confidence}</td><td>${esc(r.evidence).slice(0,90)}</td></tr>`).join("")||`<tr><td colspan="4" class="dim">${rs.length?"nothing in this filter":"no verdicts yet — "+run.status}</td></tr>`}
+    </table></div><div id="detail"></div>`;
 }
 async function openComment(num){
   const d=await api(`/api/runs/${run.runId}/comments/${num}`);
   const c=d.comment,r=d.result;
-  const esc=t=>(t??"").replace(/&/g,"&amp;").replace(/</g,"&lt;");
+  const esc2=t=>(t??"").replace(/&/g,"&amp;").replace(/</g,"&lt;");
   const diffHtml=(a,b)=>{const A=(a??"").split(/(\s+)/),B=(b??"").split(/(\s+)/);
-    // simple alignment: common prefix/suffix, middle rendered del+ins
     let p=0;while(p<A.length&&p<B.length&&A[p]===B[p])p++;
     let s=0;while(s<A.length-p&&s<B.length-p&&A[A.length-1-s]===B[B.length-1-s])s++;
-    const del=esc(A.slice(p,A.length-s).join("")),ins=esc(B.slice(p,B.length-s).join(""));
-    return esc(A.slice(0,p).join(""))+(del?`<del>${del}</del>`:"")+(ins?`<ins>${ins}</ins>`:"")+esc(A.slice(A.length-s).join(""))};
+    const del=esc2(A.slice(p,A.length-s).join("")),ins=esc2(B.slice(p,B.length-s).join(""));
+    return esc2(A.slice(0,p).join(""))+(del?`<del>${del}</del>`:"")+(ins?`<ins>${ins}</ins>`:"")+esc2(A.slice(A.length-s).join(""))};
   const b=d.beforeText??d.hunks[0]?.beforeText??"",a=d.afterText??d.hunks[0]?.afterText??"";
   const verdictPill=r?`<span class="pill ${r.verdict==="correctly_applied"?"ok":r.verdict==="needs_user"?"user":"bad"}">${r.verdict.replace(/_/g," ")}</span>`:"";
   $("#detail").innerHTML=`
   <div class="card"><h3>Comment #${num} · ${verdictPill}</h3>
-    <div class="sel">type: ${c.commentType} · status: ${c.status} · processed: ${c.processed} · page ${c.page} · anchor: ${d.anchor?("#"+d.anchor.index+" ("+d.anchor.method+")"):"unanchored"}<br>
-    <span class="quote">"${esc(c.comment).slice(0,200)}"</span></div>
+    <div class="sel" style="border:1px solid #b6bfd2;border-radius:8px;padding:10px 12px;font-size:12px;background:#fafbfd;margin:8px 0">type: ${c.commentType} · status: ${c.status} · processed: ${c.processed} · page ${c.page} · anchor: ${d.anchor?("#"+d.anchor.index+" ("+d.anchor.method+")"):"unanchored"}<br>
+    <span class="quote">"${esc2(c.comment).slice(0,200)}"</span></div>
     <div class="split">
       <div class="pane"><h5>Original</h5>${b?diffHtml(b,a):'<span class="dim">no change near this anchor</span>'}</div>
       <div class="pane"><h5>Reviewed</h5>${a?diffHtml(b,a):""}</div>
     </div>
-    ${r?`<div class="note">Evidence: ${esc(r.evidence).slice(0,300)}${r.note?" · "+esc(r.note).slice(0,150):""}</div>`:`<div class="note">no verdict yet</div>`}
+    ${r?`<div class="note">Evidence: ${esc2(r.evidence).slice(0,300)}${r.note?" · "+esc2(r.note).slice(0,150):""}</div>`:`<div class="note">no verdict yet</div>`}
   </div>`;
   $("#detail").scrollIntoView({behavior:"smooth"});
 }
-function renderStyling(){
+function htmlStyling(){
   const fs=[...(run.autoChecks??[]),...run.tasks.flatMap(t=>t.findings??[])];
   const n=sev=>fs.filter(f=>f.severity===sev).length;
-  $("#view").innerHTML=`
-  <div class="card"><h2>Styling validation — reviewed doc</h2>
+  return `<div class="card"><h3>Styling validation — reviewed doc</h3>
     <div class="kpis">
       <div class="kpi"><b>${fs.length}</b><span>checked</span></div>
       <div class="kpi"><b style="color:#1e7a2e">${n("pass")}</b><span>pass</span></div>
@@ -220,39 +235,33 @@ function renderStyling(){
     ${fs.map(f=>`<tr><td><b>${f.ruleId}</b></td><td class="dim">${f.page?"p"+f.page+(f.location?" · "+f.location:""):(f.location??"—")}</td>
       <td><span class="pill ${f.severity==="pass"?"ok":f.severity==="warning"?"warn":"bad"}">${f.severity}</span></td>
       <td>${esc(f.evidence).slice(0,90)}${f.suggestedFix?`<div class="dim">fix: ${esc(f.suggestedFix).slice(0,70)}</div>`:""}</td></tr>`).join("")||`<tr><td colspan="4" class="dim">no styling findings</td></tr>`}
-    </table>
-    <div class="note" style="margin-top:10px">evidence vs verdict_reason are kept separate · deterministic rollup decides the run verdict — never the agent.</div>
-  </div>`;
+    </table></div>`;
 }
-function esc(t){return (t??"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;")}
-function renderReport(){
+function htmlReport(){
   const rs=allResults(),ok=rs.filter(r=>r.verdict==="correctly_applied").length,nu=rs.filter(r=>r.verdict==="needs_user").length,prob=rs.length-ok-nu;
-  const v=run.verdict;
-  const pending=run.status!=="done";
-  $("#view").innerHTML=`
-  <div class="card"><h2>Run ${run.runId} — verdict: <span style="color:${pending?"#a06b00":v==="approved"?"#1e7a2e":"#b02020"}">${pending?"pending — run in progress":v}</span></h2>
+  const running=run.status!=="done";
+  return `<div class="card"><h3>Verdict: <span style="color:${running?"#a06b00":run.verdict==="approved"?"#1e7a2e":"#b02020"}">${running?"pending — run in progress":run.verdict}</span></h3>
     <div class="kpis">
       <div class="kpi"><b>${ok}</b><span>correctly applied</span></div>
       <div class="kpi"><b style="color:#b02020">${prob}</b><span>problems found</span></div>
       <div class="kpi"><b style="color:#5b34b0">${nu}</b><span>needs user</span></div>
     </div>
-    <div class="sel"><b>Escalation list</b>
+    <div style="border:1px solid #b6bfd2;border-radius:8px;padding:10px 12px;font-size:12px;background:#fafbfd;margin:8px 0"><b>Escalation list</b>
       ${rs.filter(r=>r.verdict!=="correctly_applied").map(r=>`<br>· #${r.commentNumber} ${r.verdict} — ${esc(r.evidence).slice(0,110)}`).join("")||"<br>· none — all comments correctly applied"}
     </div>
     ${run.completionSummary?`<div class="note">📝 ${esc(run.completionSummary).slice(0,400)}</div>`:""}
-    <div class="note">Verdict computed deterministically from verdicts + findings — never by the agent. Full audit trail: per-task JSONL transcripts.</div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-      <button class="btn ghost" onclick="window.location='/api/runs/${run.runId}/export.json'">Export JSON</button>
-      <button class="btn ghost" onclick="window.open('/api/runs/${run.runId}/report.html')">Report page</button>
-      <button class="btn" onclick="window.open('/api/runs/${run.runId}/report.html')">Export PDF (print)</button>
-    </div>
-  </div>`;
+      <button class="btn ghost small" onclick="window.location='/api/runs/${run.runId}/export.json'">Export JSON</button>
+      <button class="btn ghost small" onclick="window.open('/api/runs/${run.runId}/report.html')">Report page</button>
+    </div></div>`;
 }
+function allResults(){return (run?.tasks??[]).flatMap(t=>t.results)}
+function esc(t){return (t??"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;")}
 async function openSettings(){
   const st=await api("/api/settings");
   $("#sheet").innerHTML=`
   <h2 style="font-size:17px;color:#223;margin-bottom:2px">Runtime settings</h2>
-  <div class="sub">Saved to settings.json on the server. Env vars remain the fallback (air-gap friendly).</div>
+  <div class="sub" style="margin-bottom:12px">Saved to settings.json on the server. Env vars remain the fallback (air-gap friendly).</div>
   <div class="setrow"><label>Mode</label><select id="stMode">
     <option value="remote" ${st.mode==="remote"?"selected":""}>remote — OpenAI-compatible endpoint</option>
     <option value="ollama" ${st.mode==="ollama"?"selected":""}>ollama — local model server</option>
@@ -278,5 +287,5 @@ async function saveSettings(){
   try{await api("/api/settings",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})}catch(e){return toast("Save failed: "+e.message)}
   toast("Settings saved");closeSheet()}
 function closeSheet(){$("#overlay").classList.remove("open")}
-render();
+render();refreshList();setInterval(()=>{if(view==="list")refreshList()},5000);
 </script></body></html>
