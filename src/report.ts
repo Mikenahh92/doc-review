@@ -7,6 +7,8 @@ import type { Store } from "./store.js";
 import type { Run, Verdict } from "./types.js";
 
 export function rollupVerdict(run: Run): string {
+  const total = run.tasks.reduce((n, t) => n + t.results.length, 0);
+  if (total === 0) return run.comments.length ? "needs_user_review" : "approved"; // no verdicts collected — never silently approve
   const bad = run.tasks
     .flatMap((t) => t.results)
     .some((r) => r.verdict === "missing" || r.verdict === "incorrectly_applied");
