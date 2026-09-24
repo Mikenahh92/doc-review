@@ -81,15 +81,18 @@ tr.clickable:hover{background:#f4f8ff}
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div>
 <script>
 const $=s=>document.querySelector(s);
-let view="list", current=null, run=null, tab="overview", filter="all", poll=null, activity=null, showNew=false;
+let view="list", current=null, run=null, tab="overview", filter="all", poll=null, activity=null, showNew=false, openCommentNum=null;
 function toast(m){const t=$("#toast");t.textContent=m;t.style.display="block";setTimeout(()=>t.style.display="none",2500)}
 async function api(p,o){const r=await fetch(p,o);const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||r.status);return j}
 function stopPoll(){clearInterval(poll);poll=null}
-function goList(){view="list";current=null;run=null;stopPoll();render();refreshList()}
-async function openRun(id){view="detail";current=id;tab="overview";filter="all";stopPoll();await refresh();render();poll=setInterval(refresh,2000)}
+function goList(){view="list";current=null;run=null;openCommentNum=null;stopPoll();render();refreshList()}
+async function openRun(id){view="detail";current=id;tab="overview";filter="all";openCommentNum=null;activity=null;stopPoll();await refresh();render();poll=setInterval(refresh,2000)}
 async function refresh(){if(!current)return;try{
+  const prevStatus=run?.status;
   run=await api("/api/runs/"+current);
   activity=(await api(`/api/runs/${current}/activity`).catch(()=>null))?.activity??activity;
+  // keep the open comment detail pane stable while the user reads it; full re-render only on status change
+  if(openCommentNum!=null&&tab==="verdicts"&&prevStatus===run.status)return;
   render()}catch(e){stopPoll()}}
 let listRuns=[];
 async function refreshList(){try{listRuns=await api("/api/runs");if(view==="list")render()}catch(e){}}
@@ -157,16 +160,16 @@ function renderDetail(){
     <div class="sub" style="margin-top:6px">${s.docSummaryBefore} → ${s.docSummaryAfter}</div>
     <div class="sub">${run.commentCount} comments · ${s.anchoredCount} anchored · ${s.hunkCount} diff hunks · ${run.tasks.length} tasks</div>
     <div class="tabs">
-      <button class="${tab==="overview"?"on":""}" onclick="tab='overview';render()">Overview</button>
-      <button class="${tab==="verdicts"?"on":""}" onclick="tab='verdicts';render()">Verdicts</button>
-      <button class="${tab==="styling"?"on":""}" onclick="tab='styling';render()">Styling</button>
-      <button class="${tab==="report"?"on":""}" onclick="tab='report';render()">Report</button>
+      <button class="${tab==="overview"?"on":""}" onclick="tab='overview';openCommentNum=null;render()">Overview</button>
+      <button class="${tab==="verdicts"?"on":""}" onclick="tab='verdicts';openCommentNum=null;render()">Verdicts</button>
+      <button class="${tab==="styling"?"on":""}" onclick="tab='styling';openCommentNum=null;render()">Styling</button>
+      <button class="${tab==="report"?"on":""}" onclick="tab='report';openCommentNum=null;render()">Report</button>
     </div>
   </div>
   <div id="tabbody"></div>`;
   const el=$("#tabbody");
   if(tab==="overview")el.innerHTML=htmlOverview();
-  if(tab==="verdicts")el.innerHTML=htmlVerdicts();
+  if(tab==="verdicts"){el.innerHTML=htmlVerdicts();if(openCommentNum!=null)openComment(openCommentNum);}
   if(tab==="styling")el.innerHTML=htmlStyling();
   if(tab==="report")el.innerHTML=htmlReport();
 }
@@ -191,7 +194,7 @@ function htmlVerdicts(){
   const label={all:"all",correctly_applied:"✓ applied",incorrectly_applied:"✗ incorrect",missing:"◦ missing",needs_user:"? needs_user"};
   const shown=rs.filter(r=>filter==="all"||r.verdict===filter);
   return `<div class="card"><h3>Per-comment verification</h3>
-    <div class="filters">${Object.keys(counts).map(k=>`<span class="${filter===k?"on":""}" onclick="filter='${k}';render()">${label[k]} ${counts[k]}</span>`).join("")}</div>
+    <div class="filters">${Object.keys(counts).map(k=>`<span class="${filter===k?"on":""}" onclick="filter='${k}';openCommentNum=null;render()">${label[k]} ${counts[k]}</span>`).join("")}</div>
     <table><tr><th>#</th><th>Verdict</th><th>Conf</th><th>Evidence</th></tr>
     ${shown.map(r=>`<tr class="clickable" onclick="openComment(${r.commentNumber})"><td><b>${r.commentNumber}</b></td>
       <td><span class="pill ${r.verdict==="correctly_applied"?"ok":r.verdict==="needs_user"?"user":"bad"}">${r.verdict.replace(/_/g," ")}</span></td>
@@ -199,6 +202,7 @@ function htmlVerdicts(){
     </table></div><div id="detail"></div>`;
 }
 async function openComment(num){
+  openCommentNum=num;
   const d=await api(`/api/runs/${run.runId}/comments/${num}`);
   const c=d.comment,r=d.result;
   const esc2=t=>(t??"").replace(/&/g,"&amp;").replace(/</g,"&lt;");
