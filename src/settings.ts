@@ -23,6 +23,7 @@ export function defaultsFromEnv(): RuntimeSettings {
     mode,
     model: process.env.MODEL_ID ?? "",
     baseUrl: process.env.MODEL_BASE_URL ?? "",
+    apiKey: process.env.MODEL_API_KEY ?? "",
     concurrency: Math.max(1, Number(process.env.CONCURRENCY ?? 1)),
     maxAttempts: Math.max(1, Number(process.env.MAX_ATTEMPTS ?? 3)),
   };

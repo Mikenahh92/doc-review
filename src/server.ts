@@ -79,7 +79,7 @@ app.get("/api/settings/models", async (_req, res) => {
   const base = (s.baseUrl ?? "").replace(/\/+$/, "");
   if (!base) return res.status(400).json({ error: "no baseUrl configured" });
   try {
-    const key = s.apiKey ?? "";
+    const key = s.apiKey || process.env.MODEL_API_KEY || "";
     const r = await fetch(`${base}/models`, { headers: key ? { Authorization: `Bearer ${key}` } : {} });
     if (!r.ok) return res.status(502).json({ error: `provider ${r.status}` });
     const j: any = await r.json();
