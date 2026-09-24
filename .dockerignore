@@ -1,0 +1,8 @@
+node_modules
+dist
+runs
+runs-test
+uploads
+test/fixtures
+settings.json
+*.log

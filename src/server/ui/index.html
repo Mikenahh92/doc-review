@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ReWork Check</title>
+<style>
+:root{--bg:#101014;--panel:#17171d;--panel2:#1e1e26;--line:#26262e;--line2:#32323c;--text:#e8e8ec;--dim:#8a8a96;--acc:#4f8cff;--green:#34c759;--amber:#e6a23c;--red:#ff453a}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+header{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+h1{font-size:16px;margin:0;font-weight:600}
+.chips{display:flex;gap:6px}
+.chip{background:var(--panel2);border:1px solid var(--line2);border-radius:99px;padding:2px 10px;font-size:11.5px;color:var(--dim)}
+main{display:flex;height:calc(100vh - 49px)}
+aside{width:300px;border-right:1px solid var(--line);padding:16px;overflow-y:auto}
+.content{flex:1;overflow-y:auto;padding:20px}
+.label{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 6px}
+input,select{background:var(--panel2);border:1px solid var(--line2);border-radius:8px;color:var(--text);padding:7px 10px;font-size:13px;width:100%}
+input[type=file]{font-size:11.5px;color:var(--dim)}
+button{background:var(--acc);color:#fff;border:0;border-radius:99px;padding:7px 18px;font-size:13px;font-weight:600;cursor:pointer}
+button:hover{filter:brightness(1.12)}
+button.ghost{background:transparent;color:var(--acc);border:1px solid var(--acc)}
+button.small{padding:3px 11px;font-size:11.5px}
+.run-item{padding:9px 10px;border-radius:10px;cursor:pointer;margin-bottom:4px;border:1px solid transparent}
+.run-item:hover{background:var(--panel)}
+.run-item.active{background:var(--panel2);border-color:var(--line2)}
+.rid{font-weight:600;font-size:13px}
+.rmeta{font-size:11.5px;color:var(--dim);margin-top:2px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.dot.done{background:var(--green)}.dot.running{background:var(--acc)}.dot.failed{background:var(--red)}
+.dot.planned{background:var(--amber)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;margin-top:10px}
+th{color:var(--dim);text-align:left;font-weight:500;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.tag{display:inline-block;border-radius:6px;padding:1px 8px;font-size:11px}
+.tag.correctly_applied{background:rgba(52,199,89,.15);color:var(--green)}
+.tag.incorrectly_applied{background:rgba(255,69,58,.15);color:var(--red)}
+.tag.missing{background:rgba(255,159,10,.15);color:var(--amber)}
+.tag.needs_user{background:rgba(79,140,255,.15);color:var(--acc)}
+.tag.approved{background:rgba(52,199,89,.15);color:var(--green)}
+.tag.needs_changes,.tag.failed{background:rgba(255,69,58,.15);color:var(--red)}
+.tag.needs_user_review{background:rgba(79,140,255,.15);color:var(--acc)}
+.tag.violation{background:rgba(255,69,58,.15);color:var(--red)}
+.tag.warning{background:rgba(255,159,10,.15);color:var(--amber)}
+.empty{color:var(--dim);padding:40px;text-align:center}
+.note{font-size:11.5px;color:var(--dim);margin-top:6px}
+.toast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:9px 18px;font-size:13px;z-index:99}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;overflow-y:auto;padding:40px 16px}
+.overlay.open{display:block}
+.sheet{max-width:560px;margin:0 auto;background:var(--panel);border:1px solid var(--line2);border-radius:18px;padding:22px}
+.sheet h2{font-size:18px;font-weight:600;margin:0 0 2px}
+.sheet .sub{font-size:12px;color:var(--dim);margin-bottom:16px}
+.setrow{display:flex;flex-direction:column;gap:4px;padding:9px 0;border-top:1px solid var(--line)}
+.setrow:first-of-type{border-top:0}
+.setrow label{font-size:11.5px;color:var(--dim)}
+.setrow .hint{font-size:11px;color:var(--dim)}
+.verdict-big{font-size:20px;font-weight:600;margin:8px 0}
+.section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+pre{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:11.5px;overflow-x:auto;white-space:pre-wrap}
+</style></head><body>
+<header>
+  <h1>ReWork Check</h1>
+  <div class="chips" id="chips"></div>
+  <div style="flex:1"></div>
+  <button class="ghost small" onclick="openSettings()">⚙ settings</button>
+</header>
+<main>
+  <aside>
+    <div class="label">New check</div>
+    <input type="file" id="before" accept=".docx">
+    <div style="height:6px"></div>
+    <input type="file" id="after" accept=".docx">
+    <div style="height:6px"></div>
+    <input type="file" id="register" accept=".xlsx">
+    <div style="margin-top:12px"><button id="runBtn" onclick="createRun()">Run rework check</button></div>
+    <div class="note" id="runMsg"></div>
+    <div class="label">Runs</div>
+    <div id="runlist"></div>
+  </aside>
+  <section class="content" id="view"><div class="empty">Upload before.docx, after.docx and comments.xlsx — or select a run</div></section>
+</main>
+<div class="toast" id="toast"></div>
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet" id="sheet"></div>
+</div>
+<script>
+const $ = (s)=>document.querySelector(s);
+let current=null, poll=null;
+function toast(m){const t=$("#toast");t.textContent=m;t.style.display="block";setTimeout(()=>t.style.display="none",2500)}
+async function api(p,o){const r=await fetch(p,o);const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||r.status);return j}
+async function loadConfig(){
+  const c=await api("/api/config");
+  $("#chips").innerHTML=`<span class="chip">${c.model||c.mode}</span><span class="chip">mode: ${c.mode}</span><span class="chip">${c.concurrency}×</span>`;
+}
+async function loadRuns(){
+  const runs=await api("/api/runs");
+  $("#runlist").innerHTML=runs.map(r=>`<div class="run-item ${r.runId===current?"active":""}" onclick="selectRun('${r.runId}')">
+    <div class="rid"><span class="dot ${r.status}"></span>${r.runId}</div>
+    <div class="rmeta">${r.status} · ${r.tasksDone} tasks · <span class="tag ${r.verdict??""}">${r.verdict??"—"}</span></div>
+  </div>`).join("")||`<div class="note">no runs yet</div>`;
+}
+function selectRun(id){current=id;clearInterval(poll);render();poll=setInterval(render,2000);loadRuns()}
+async function createRun(){
+  const files=[["before",$("#before")],["after",$("#after")],["register",$("#register")]];
+  for(const [name,el] of files) if(!el.files[0]) return toast(`select the ${name} file first`);
+  $("#runMsg").textContent="uploading + pre-pass…";
+  const b64=f=>new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result.split(",")[1]);fr.readAsDataURL(f)});
+  try{
+    const body={before:{filename:$("#before").files[0].name,contentB64:await b64($("#before").files[0])},
+      after:{filename:$("#after").files[0].name,contentB64:await b64($("#after").files[0])},
+      register:{filename:$("#register").files[0].name,contentB64:await b64($("#register").files[0])}};
+    const j=await api("/api/runs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    $("#runMsg").textContent=(j.warnings&&j.warnings.length?j.warnings.join("; ")+" · ":"")+"run "+j.runId+" started";
+    selectRun(j.runId);
+  }catch(e){$("#runMsg").textContent="";toast("failed: "+e.message)}
+}
+async function render(){
+  if(!current)return;
+  let r;try{r=await api("/api/runs/"+current)}catch(e){$("#view").innerHTML=`<div class="empty">${e.message}</div>`;return}
+  if(r.status==="done"||r.status==="failed")clearInterval(poll);
+  const results=r.tasks.flatMap(t=>t.results.map(x=>({...x,task:t.id})));
+  const findings=r.tasks.flatMap(t=>t.findings);
+  $("#view").innerHTML=`
+  <div class="section">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="verdict-big">Run ${r.runId}</div>
+      <span class="tag ${r.verdict??""}">${r.verdict??"pending"}</span>
+      <span class="tag" style="background:var(--panel2);color:var(--dim)">${r.status}</span>
+      <div style="flex:1"></div>
+      ${r.status==="done"?`<button class="ghost small" onclick="window.open('/api/runs/${r.runId}/report.html')">report</button>`:""}
+    </div>
+    <div class="note">${r.summary.docSummaryBefore} → ${r.summary.docSummaryAfter}</div>
+    <div class="note">${r.summary.commentCount} comments · ${r.summary.anchoredCount} anchored · ${r.summary.hunkCount} diff hunks · ${r.tasks.length} tasks</div>
+    ${r.completionSummary?`<div class="note">📝 ${r.completionSummary}</div>`:""}
+  </div>
+  <div class="section"><div class="label" style="margin-top:0">Per-comment verdicts (${results.length})</div>
+    <table><thead><tr><th>#</th><th>verdict</th><th>conf</th><th>evidence</th></tr></thead><tbody>
+    ${results.map(x=>`<tr><td>${x.commentNumber}</td><td><span class="tag ${x.verdict}">${x.verdict}</span></td><td>${x.confidence}</td><td>${(x.evidence||"").slice(0,160)}${x.note?`<div class="note">${x.note.slice(0,140)}</div>`:""}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">no results yet</td></tr>`}
+    </tbody></table></div>
+  ${r.autoChecks.length||findings.length?`<div class="section"><div class="label" style="margin-top:0">Checks &amp; findings</div>
+    ${(r.autoChecks||[]).map(f=>`<div style="padding:6px 0;border-bottom:1px solid var(--line)"><span class="tag ${f.severity}">${f.severity}</span> <b>${f.ruleId}</b> — ${f.evidence}</div>`).join("")}
+    ${findings.map(f=>`<div style="padding:6px 0;border-bottom:1px solid var(--line)"><span class="tag ${f.severity}">${f.severity}</span> ${f.evidence}</div>`).join("")}
+  </div>`:""}
+  <div class="section"><div class="label" style="margin-top:0">Tasks</div>
+    <table><thead><tr><th>id</th><th>status</th><th>scope</th><th>results</th></tr></thead><tbody>
+    ${r.tasks.map(t=>`<tr><td>${t.id}</td><td><span class="tag ${t.status==="done"?"correctly_applied":t.status==="failed"||t.status==="blocked"?"missing":""}">${t.status}</span></td><td>${t.scope.join(", ")}</td><td>${t.results.length}${t.note?`<div class="note">${t.note.slice(0,120)}</div>`:""}</td></tr>`).join("")}
+    </tbody></table></div>`;
+  if(r.status==="running"||r.status==="planned")loadRuns();
+}
+async function openSettings(){
+  const st=await api("/api/settings");
+  $("#sheet").innerHTML=`
+    <h2>Runtime settings</h2>
+    <div class="sub">Saved to settings.json on the server. Env vars remain the fallback (air-gap friendly).</div>
+    <div class="setrow"><label>Mode</label>
+      <select id="stMode">
+        <option value="remote" ${st.mode==="remote"?"selected":""}>remote — OpenAI-compatible endpoint</option>
+        <option value="ollama" ${st.mode==="ollama"?"selected":""}>ollama — local model server</option>
+        <option value="faux" ${st.mode==="faux"?"selected":""}>faux — deterministic test mode</option>
+      </select></div>
+    <div class="setrow"><label>Model</label>
+      <div style="display:flex;gap:6px"><input id="stModel" list="stModels" value="${st.model||""}" style="flex:1" placeholder="model id">
+      <button class="small ghost" onclick="loadModels()">load models</button></div>
+      <datalist id="stModels"></datalist>
+      <div class="hint" id="stModelsHint">Fetched from the endpoint's /models.</div></div>
+    <div class="setrow"><label>Base URL</label><input id="stBase" value="${(st.baseUrl||"").replace(/\/\/[^@]*@/,"//")}" placeholder="http://localhost:11434/v1"></div>
+    <div class="setrow"><label>API key</label><input id="stKey" type="password" placeholder="${st.hasApiKey?(st.apiKeyMasked+" (set — leave blank to keep)"):"not set (local servers often need none)"}"></div>
+    <div class="setrow"><label>Parallel tasks</label><input id="stConc" type="number" min="1" max="16" value="${st.concurrency??1}"></div>
+    <div class="setrow"><label>Attempts per task</label><input id="stAtt" type="number" min="1" max="10" value="${st.maxAttempts??3}"></div>
+    <div style="display:flex;gap:8px;margin-top:14px"><button onclick="saveSettings()">Save</button><button class="ghost" onclick="closeSheet()">Cancel</button></div>`;
+  $("#overlay").classList.add("open");
+}
+async function loadModels(){
+  const h=$("#stModelsHint");h.textContent="loading…";
+  try{const r=await api("/api/settings/models");$("#stModels").innerHTML=(r.models||[]).map(m=>`<option value="${m}">`).join("");h.textContent=`${(r.models||[]).length} models — type or pick one`}
+  catch(e){h.textContent="Could not load: "+e.message}
+}
+async function saveSettings(){
+  const body={mode:$("#stMode").value,model:$("#stModel").value.trim(),baseUrl:$("#stBase").value.trim(),
+    concurrency:Number($("#stConc").value),maxAttempts:Number($("#stAtt").value)};
+  const k=$("#stKey").value;if(k&&!k.includes("•"))body.apiKey=k;
+  try{await api("/api/settings",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})}catch(e){return toast("Save failed: "+e.message)}
+  toast("Settings saved");closeSheet();loadConfig();
+}
+function closeSheet(){$("#overlay").classList.remove("open")}
+loadConfig();loadRuns();
+</script></body></html>

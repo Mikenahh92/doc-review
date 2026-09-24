@@ -1,0 +1,30 @@
+name: CI
+on:
+  push:
+    branches: [master]
+jobs:
+  build-test-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+      - run: npm run fixtures
+      - run: npm run e2e
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/mikenahh92/doc-review:latest
+            ghcr.io/mikenahh92/doc-review:${{ github.sha }}

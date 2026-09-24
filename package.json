@@ -1,0 +1,26 @@
+{
+  "name": "hengelo-doc-review-prototype",
+  "version": "0.1.0",
+  "description": "Prototype: validation of reviewed documents — backend + pi agent runtime + tool bridge",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "fixtures": "node dist/test/make-fixtures.js",
+    "e2e": "npm run build && node dist/test/e2e.js",
+    "start": "npm run build && node dist/src/server.js"
+  },
+  "dependencies": {
+    "@earendil-works/pi-agent-core": "^0.85.1",
+    "@earendil-works/pi-ai": "^0.85.1",
+    "@sinclair/typebox": "^0.34.52",
+    "adm-zip": "^0.5.16",
+    "express": "^5.1.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.7",
+    "@types/express": "^5.0.1",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}
