@@ -96,8 +96,12 @@ async function refresh(){if(!current)return;try{
   render()}catch(e){stopPoll()}}
 let listRuns=[];
 async function refreshList(){try{listRuns=await api("/api/runs");if(view==="list")render()}catch(e){}}
+const OKEXT={before:["docx","pdf","md"],after:["docx","pdf","md"],register:["xlsx"]};
 function pick(id){const el=$("#"+id);el.onclick=()=>el.querySelector("input").click();
   el.querySelector("input").onchange=()=>{const f=el.querySelector("input").files[0];
+    const ext=f?f.name.split(".").pop().toLowerCase():"";
+    if(f&&!OKEXT[id].includes(ext)){el.classList.remove("filled");el.dataset.has="";el.querySelector("input").value="";
+      el.querySelector(".meta").textContent=`unsupported .${ext} — expected ${OKEXT[id].join(" / ")}`;toast(`.${ext} not supported for ${id} (use ${OKEXT[id].join(" / ")})`);return}
     el.classList.add("filled");el.querySelector(".meta").textContent=f?f.name+" · "+(f.size/1024).toFixed(0)+" KB ✓":"";
     el.dataset.has=f?"1":""}}
 async function newRun(){
@@ -124,9 +128,9 @@ async function renderList(){
     <button class="btn" onclick="showNew=!showNew;renderList()">＋ New run</button>
   </div>
   ${showNew?`<div class="card"><h3>Start validation run</h3>
-    <div class="up" id="before"><b>📄 Original document</b><span class="meta">drop or click — .docx / .pdf / .md</span><input type="file" accept=".docx,.pdf,.md"></div>
-    <div class="up" id="after"><b>📄 Reviewed document</b><span class="meta">drop or click — .docx / .pdf / .md</span><input type="file" accept=".docx,.pdf,.md"></div>
-    <div class="up" id="register"><b>📊 Comments register (XLSX)</b><span class="meta">drop or click — .xlsx</span><input type="file" accept=".xlsx"></div>
+    <div class="up" id="before"><b>📄 Original document</b><span class="meta">drop or click — .docx / .pdf / .md</span><input type="file"></div>
+    <div class="up" id="after"><b>📄 Reviewed document</b><span class="meta">drop or click — .docx / .pdf / .md</span><input type="file"></div>
+    <div class="up" id="register"><b>📊 Comments register (XLSX)</b><span class="meta">drop or click — .xlsx</span><input type="file"></div>
     <button class="btn" onclick="newRun()">Run pre-pass &amp; plan</button>
     <span style="margin-left:10px;font-size:12px" id="newMsg"></span>
   </div>`:""}
