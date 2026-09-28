@@ -10,6 +10,7 @@ import { buildRun } from "./prepass/index.js";
 import { executeRun } from "./orchestrator.js";
 import { reportHtml, rollupVerdict } from "./report.js";
 import { readSettings, writeSettings, maskKey } from "./settings.js";
+import { installDemoOracle } from "./demoOracle.js";
 import type { RuntimeConfig } from "./agent/runtime.js";
 
 const ROOT = process.cwd();
@@ -115,7 +116,10 @@ app.post("/api/runs", async (req, res) => {
       }
     );
     store.save(run);
-    executeRun(store, run, effectiveConfig()); // fire and forget; poll via GET
+    // DR-24: faux mode gets a deterministic demo oracle so a fresh container runs end-to-end without a model server
+    const cfg = effectiveConfig();
+    const demoEvents = cfg.mode === "faux" ? installDemoOracle(store, run.runId, cfg) : undefined;
+    executeRun(store, run, cfg, demoEvents); // fire and forget; poll via GET
     res.json({ runId: run.runId, warnings });
   } catch (e: any) {
     res.status(400).json({ error: e.message });
