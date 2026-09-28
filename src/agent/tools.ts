@@ -8,6 +8,22 @@ import type { Run, Task, TaskResult, Verdict } from "../types.js";
 import { GuardError, VERDICTS } from "../types.js";
 
 const text = (obj: unknown) => [{ type: "text" as const, text: JSON.stringify(obj, null, 1) }];
+const xml = (s: string) => [{ type: "text" as const, text: s }];
+
+/** XML attribute escaping + single-line flattening for prose bodies. */
+const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const one = (s: string) => s.replace(/\s+/g, " ").trim();
+
+/** Progress hint block appended to getOverview (spec §7). */
+function nextBlock(run: Run): string {
+  const open = run.tasks.filter((t) => t.status !== "done");
+  const phase = run.tasks.length === 0 ? "planning" : open.length > 0 ? "tasks" : "completion";
+  const perTask = open.map((t) => {
+    const rem = t.commentNumbers.filter((n) => !t.results.some((r) => r.commentNumber === n)).length;
+    return `${t.taskId}: ${rem === 0 ? "ready to complete" : `${rem} of ${t.commentNumbers.length} comments left`}`;
+  });
+  return `<next phase="${phase}" openTasks="${open.length}">${esc(perTask.join(" · ") || "all tasks done")}</next>`;
+}
 
 interface Ctx {
   store: Store;
@@ -57,16 +73,14 @@ function getOverview(ctx: Ctx): AgentTool<any> {
     parameters: Type.Object({}),
     execute: async () => {
       const run = getRun(ctx);
-      return {
-        content: text({
+      const payload = {
           before: run.summary.docSummaryBefore,
           after: run.summary.docSummaryAfter,
           diffHunks: run.summary.hunkCount,
           comments: run.comments.map((c) => ({ number: c.number, page: c.page, location: c.locationType, locationNumber: c.locationNumber })),
           anchors: run.anchors,
-        }),
-        details: {},
       };
+      return { content: xml(JSON.stringify(payload, null, 1) + "\n" + nextBlock(run)), details: {} };
     },
   };
 }
@@ -80,12 +94,24 @@ function getDiff(ctx: Ctx): AgentTool<any> {
     execute: async (_id, p: any) => {
       commentByNumber(ctx, p.commentNumber);
       const { anchor, hunks } = hunksNear(ctx, p.commentNumber);
+      const a = anchor
+        ? ` anchor="${anchor.anchorIndex ?? "none"}" method="${anchor.method}"`
+        : "";
+      if (!hunks.length) {
+        return {
+          content: xml(`<diff comment="${p.commentNumber}" hunks="0"${a}>no diff hunks near this anchor</diff>`),
+          details: { hunkCount: 0 },
+        };
+      }
+      const body = hunks
+        .map((h) => {
+          const b = h.beforeIndex !== undefined ? ` before="${h.beforeIndex}"` : "";
+          const f = h.afterIndex !== undefined ? ` after="${h.afterIndex}"` : "";
+          return `  <hunk id="${esc(h.id)}" kind="${h.kind}"${b}${f}>\n    BEFORE: ${one(h.beforeText ?? "—")}\n    AFTER:  ${one(h.afterText ?? "—")}\n  </hunk>`;
+        })
+        .join("\n");
       return {
-        content: text({
-          commentNumber: p.commentNumber,
-          anchor,
-          hunks: hunks.length ? hunks : "(no diff hunks near this anchor)",
-        }),
+        content: xml(`<diff comment="${p.commentNumber}" hunks="${hunks.length}"${a}>\n${body}\n</diff>`),
         details: { hunkCount: hunks.length },
       };
     },
@@ -107,7 +133,7 @@ function excerptTool(ctx: Ctx, which: "before" | "after"): AgentTool<any> {
       const anchor = anchorOf(ctx, p.commentNumber);
       if (!anchor || anchor.anchorIndex === null) {
         return {
-          content: text({ commentNumber: p.commentNumber, error: "anchoring failed — return needs_user for this comment" }),
+          content: xml(`<excerpt comment="${p.commentNumber}">anchoring failed — return needs_user for this comment</excerpt>`),
           details: {},
         };
       }
@@ -119,7 +145,13 @@ function excerptTool(ctx: Ctx, which: "before" | "after"): AgentTool<any> {
         const h = hunks.find((x) => x.afterIndex !== undefined);
         if (h && h.afterIndex !== undefined) center = h.afterIndex;
       }
-      return { content: text({ commentNumber: p.commentNumber, blocks: excerpt(blocks, center, p.radius ?? 2) }), details: {} };
+      const rows = excerpt(blocks, center, p.radius ?? 2)
+        .map((b) => `  [block ${b.index} | ${b.type}] ${one(b.text)}`)
+        .join("\n");
+      return {
+        content: xml(`<excerpt comment="${p.commentNumber}" doc="${which}" radius="${p.radius ?? 2}" center="${center}">\n${rows}\n</excerpt>`),
+        details: {},
+      };
     },
   };
 }
@@ -136,7 +168,12 @@ function searchGlobal(ctx: Ctx): AgentTool<any> {
       const hits = (doc: string, blocks: Run["before"]["blocks"]) =>
         blocks.filter((b) => b.text.toLowerCase().includes(q)).slice(0, 5)
           .map((b) => ({ doc, index: b.index, type: b.type, text: b.text.slice(0, 200) }));
-      return { content: text({ query: p.query, matches: [...hits("before", run.before.blocks), ...hits("after", run.after.blocks)] }), details: {} };
+      const matches = [...hits("before", run.before.blocks), ...hits("after", run.after.blocks)];
+      const rows = matches.map((m) => `  [${m.doc} #${m.index} | ${m.type}] ${one(m.text)}`).join("\n");
+      return {
+        content: xml(`<search query="${esc(p.query)}" matches="${matches.length}">\n${rows}\n</search>`),
+        details: {},
+      };
     },
   };
 }
@@ -170,7 +207,15 @@ function writeResult(ctx: Ctx): AgentTool<any> {
       if (i >= 0) task.results[i] = result; else task.results.push(result);
       ctx.store.save(run);
       ctx.store.logToolCall(run.runId, task.taskId, { tool: "writeResult", accepted: result });
-      return { content: text({ ok: true, commentNumber: p.commentNumber, verdict: p.verdict }), details: {} };
+      // progress hint (spec §7): what remains in this task's scope
+      const missing = task.commentNumbers.filter((n) => !task.results.some((r) => r.commentNumber === n));
+      return {
+        content: text({
+          ok: true, commentNumber: p.commentNumber, verdict: p.verdict,
+          progress: { task: task.taskId, recorded: task.results.length, remaining: missing.length, missing },
+        }),
+        details: {},
+      };
     },
   };
 }
@@ -197,7 +242,17 @@ function writeValidation(ctx: Ctx): AgentTool<any> {
       if (i >= 0) task.findings[i] = p; else task.findings.push(p);
       ctx.store.save(run);
       ctx.store.logToolCall(run.runId, task.taskId, { tool: "writeValidation", accepted: p });
-      return { content: text({ ok: true, findingId: p.id }), details: {} };
+      // progress hint (spec §7): ruleset rule coverage for this task
+      const ruleIds = task.ruleIds ?? [];
+      const reported = new Set(task.findings.map((f) => f.ruleId));
+      const unreported = ruleIds.filter((r) => !reported.has(r));
+      return {
+        content: text({
+          ok: true, findingId: p.id,
+          progress: { ruleCoverage: { reported: ruleIds.length - unreported.length, unreported } },
+        }),
+        details: {},
+      };
     },
   };
 }
@@ -217,7 +272,8 @@ function completeTask(ctx: Ctx): AgentTool<any> {
       if (missing.length > 0) {
         const msg = `Guard: task ${task.taskId} cannot complete — comments without verdict: ${missing.join(", ")}. Call writeResult for each.`;
         ctx.store.logToolCall(run.runId, task.taskId, { tool: "completeTask", rejected: msg });
-        return { content: text({ ok: false, error: msg }), details: {}, };
+        // error + next action (spec §7)
+        return { content: text({ ok: false, error: msg, next: `call writeResult for #${missing[0]} next` }), details: {}, };
       }
       task.status = "done";
       task.note = p.note;
@@ -263,7 +319,7 @@ export function buildPlannerTools(ctx: Ctx): AgentTool<any>[] {
       }));
       ctx.store.save(run);
       ctx.store.logToolCall(run.runId, "PLAN", { tool: "writeTaskPlan", accepted: p.tasks.length + " tasks" });
-      return { content: text({ ok: true, tasksCreated: run.tasks.length }), details: {} };
+      return { content: text({ ok: true, tasksCreated: run.tasks.length, next: "call completePlanning to close planning" }), details: {} };
     },
   };
   const complete: AgentTool<any> = {
@@ -307,7 +363,7 @@ export function buildCompleterTools(ctx: Ctx): AgentTool<any>[] {
       run.completionSummary = p.summary;
       ctx.store.save(run);
       ctx.store.logToolCall(run.runId, "DONE", { tool: "writeRunSummary", accepted: p.summary });
-      return { content: text({ ok: true }), details: {} };
+      return { content: text({ ok: true, next: "call completeRun to finish" }), details: {} };
     },
   };
   const completeRun: AgentTool<any> = {
