@@ -13,7 +13,6 @@ export const VERDICTS: Verdict[] = [
   "needs_user",
 ];
 
-export type Severity = "pass" | "warning" | "violation" | "not_applicable";
 
 /** A normalized comment row from the register (pre-filtered: accepted + processed=yes). */
 export interface CommentRecord {
@@ -73,14 +72,11 @@ export interface TaskResult {
 
 export interface Finding {
   id: string;
-  ruleId: string;
-  severity: Severity;
-  page?: number;
-  location?: string;
+  checkId: string;         // e.g. "DOC-2" — deterministic document check id
+  severity: "violation";
   evidence: string;
   verdictReason: string;
   suggestedFix?: string;
-  confidence: "high" | "medium" | "low";
 }
 
 export interface Task {

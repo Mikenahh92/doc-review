@@ -114,8 +114,8 @@ export async function executeRun(
     store.save(run);
   }
 
-  // ---- DETERMINISTIC SPLIT (DR-25: no planner agent — chunks of 10 comments /
-  // 6 rules, constructed, never negotiated). Idempotent: an empty task list only. ----
+  // ---- DETERMINISTIC SPLIT (verify chunks of ≤10 comments, constructed,
+  // never negotiated). Idempotent: fills an empty task list only. ----
   if (run.tasks.length === 0) {
     planTasksDeterministic(run);
     store.save(run);

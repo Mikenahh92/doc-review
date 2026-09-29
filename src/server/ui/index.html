@@ -185,7 +185,7 @@ function renderDetail(){
 }
 function htmlOverview(){
   return `<div class="card">
-    ${!run.tasks.length?`<div class="task">🔄 Planner agent<span class="meta">creating verify tasks…</span><div class="prog"><i style="width:40%"></i></div></div>`:
+    ${!run.tasks.length?`<div class="task">🔄 Pre-pass<span class="meta">creating verify tasks…</span><div class="prog"><i style="width:40%"></i></div></div>`:
     run.tasks.map(t=>{const p=t.scope.length?t.results.length/t.scope.length:0;
       const ic=t.status==="done"?"✅":t.status==="in_progress"?"🔄":t.status==="blocked"?"⛔":"◻";
       return `<div class="task">${ic} ${t.id} — ${t.title}<span class="meta">${t.results.length}/${t.scope.length} verdicts${t.note?" · "+t.note.slice(0,60):""}</span><div class="prog"><i style="width:${Math.round(p*100)}%"></i></div></div>`}).join("")}

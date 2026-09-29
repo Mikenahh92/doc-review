@@ -29,12 +29,11 @@ function autoDocChecks(before: ParsedDoc, after: ParsedDoc): Finding[] {
   if (after.blocks.length < before.blocks.length - 2) {
     findings.push({
       id: "AUTO-DOC-2",
-      ruleId: "DOC-2",
+      checkId: "DOC-2",
       severity: "violation",
       evidence: `before has ${before.blocks.length} blocks, after has ${after.blocks.length}`,
       verdictReason: "after-review document appears smaller than before-review document (revision check placeholder)",
       suggestedFix: "Verify the correct after-review document was supplied",
-      confidence: "high",
     });
   }
   return findings;

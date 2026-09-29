@@ -10,7 +10,7 @@ per-comment verdicts + a deterministic report. **The agent never edits anything.
   doc checks) builds the complete run map before any LLM task starts. Verify agents work per task
   through guarded tools; the verdict is computed deterministically from collected results — never
   by the agent. Per-task JSONL transcripts give a full audit trail.
-- **Agent runtime:** [pi](https://github.com/badlogic/pi-mono) sessions — one fresh session per
+- **Agent runtime:** [pi](https://github.com/earendil-works/pi) sessions — one fresh session per
   task. Runs against any OpenAI-compatible endpoint (remote), an Ollama server (air-gapped), or a
   deterministic faux provider for model-free tests.
 - **Resumability:** parallel worker pool with per-task attempts; guarded completion refuses to

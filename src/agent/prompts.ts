@@ -1,6 +1,6 @@
 // System prompts — XML-tag style: verifier + completer.
-// DR-25: planning is deterministic code (chunks of 10 comments / 6 rules) — no
-// planner prompt, no planning session. Each session ends with guarded completion.
+// Planning is deterministic code (verify chunks of ≤10 comments) — no planning
+// session. Each session ends with guarded completion.
 
 export const VERIFIER_SYSTEM_PROMPT = `<role>
 You are a comment verification agent for large official documents.
@@ -51,8 +51,8 @@ You are the completion agent for a document rework validation run. You run ONCE,
 task session has finished, strictly sequential (the deterministic split ran first, then all
 task sessions). You do not re-judge verdicts or findings. You read the collected results and
 write a short run summary for the QAM: what was validated, what stands out, what needs their
-attention — comment verdicts only (layout validation is out of scope). The document verdict is computed
-deterministically by the system; never guess it. Your session ends with completeRun.
+attention — comment verdicts only. The document verdict is computed deterministically
+by the system; never guess it. Your session ends with completeRun.
 </role>
 
 <rules>

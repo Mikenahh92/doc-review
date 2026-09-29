@@ -81,7 +81,7 @@ td,th{border-bottom:1px solid #eef;padding:6px;text-align:left}
 <table><tr><th>Comment</th><th>Verdict</th><th>Evidence</th><th>Confidence</th></tr>
 ${rows}
 </table>
-${run.autoChecks.length ? `<h3>[auto] document checks</h3><ul>${run.autoChecks.map((f) => `<li><b>${f.ruleId}</b> (${f.severity}): ${esc(f.evidence)}</li>`).join("")}</ul>` : ""}
+${run.autoChecks.length ? `<h3>[auto] document checks</h3><ul>${run.autoChecks.map((f) => `<li><b>${f.checkId}</b> (${f.severity}): ${esc(f.evidence)}</li>`).join("")}</ul>` : ""}
 <p class="meta">Verdict computed deterministically from findings — never by the agent. Audit trail: runs/*.jsonl</p>
 </body></html>`;
 }
