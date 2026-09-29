@@ -1,0 +1,60 @@
+{"ts":"2026-09-29T15:19:44.170Z","tool":"searchGlobal","args":{"query":"sampling rate"}}
+{"ts":"2026-09-29T15:19:44.181Z","tool":"searchGlobal","args":{"query":"thermal monitor"}}
+{"ts":"2026-09-29T15:19:44.182Z","tool":"searchGlobal","args":{"query":"bus controller"}}
+{"ts":"2026-09-29T15:19:44.182Z","tool":"searchGlobal","args":{"query":"clock tree tolerance"}}
+{"ts":"2026-09-29T15:19:44.182Z","tool":"searchGlobal","args":{"query":"memory scrubber"}}
+{"ts":"2026-09-29T15:19:44.183Z","tool":"searchGlobal","args":{"query":"unicorn protocol"}}
+{"ts":"2026-09-29T15:19:44.183Z","tool":"searchGlobal","args":{"query":"warp coil"}}
+{"ts":"2026-09-29T15:19:44.183Z","tool":"searchGlobal","args":{"query":"quantum telemetry"}}
+{"ts":"2026-09-29T15:19:44.183Z","tool":"searchGlobal","args":{"query":"dilithium calibration"}}
+{"ts":"2026-09-29T15:20:17.371Z","tool":"searchGlobal","args":{"query":"sampling"}}
+{"ts":"2026-09-29T15:20:17.372Z","tool":"searchGlobal","args":{"query":"clock tree"}}
+{"ts":"2026-09-29T15:20:17.372Z","tool":"searchGlobal","args":{"query":"unicorn"}}
+{"ts":"2026-09-29T15:20:17.373Z","tool":"searchGlobal","args":{"query":"warp"}}
+{"ts":"2026-09-29T15:20:17.373Z","tool":"searchGlobal","args":{"query":"telemetry"}}
+{"ts":"2026-09-29T15:20:17.373Z","tool":"searchGlobal","args":{"query":"dilithium"}}
+{"ts":"2026-09-29T15:20:17.373Z","tool":"searchGlobal","args":{"query":"appendix"}}
+{"ts":"2026-09-29T15:20:17.373Z","tool":"searchGlobal","args":{"query":"latency"}}
+{"ts":"2026-09-29T15:21:52.258Z","tool":"searchGlobal","args":{"query":"sample rate"}}
+{"ts":"2026-09-29T15:21:52.259Z","tool":"searchGlobal","args":{"query":"requirement"}}
+{"ts":"2026-09-29T15:21:52.259Z","tool":"searchGlobal","args":{"query":"margin"}}
+{"ts":"2026-09-29T15:21:52.259Z","tool":"searchGlobal","args":{"query":"revision"}}
+{"ts":"2026-09-29T15:21:52.259Z","tool":"searchGlobal","args":{"query":"reference condition"}}
+{"ts":"2026-09-29T15:21:52.259Z","tool":"searchGlobal","args":{"query":"flux"}}
+{"ts":"2026-09-29T15:23:10.885Z","tool":"searchGlobal","args":{"query":"under condition L5"}}
+{"ts":"2026-09-29T15:23:10.885Z","tool":"searchGlobal","args":{"query":"under condition L9"}}
+{"ts":"2026-09-29T15:23:10.885Z","tool":"searchGlobal","args":{"query":"under condition L13"}}
+{"ts":"2026-09-29T15:23:10.886Z","tool":"searchGlobal","args":{"query":"under condition L14"}}
+{"ts":"2026-09-29T15:23:10.886Z","tool":"searchGlobal","args":{"query":"under condition L15"}}
+{"ts":"2026-09-29T15:23:10.886Z","tool":"searchGlobal","args":{"query":"limit"}}
+{"ts":"2026-09-29T15:23:10.886Z","tool":"searchGlobal","args":{"query":"acquisition module"}}
+{"ts":"2026-09-29T15:23:59.856Z","tool":"searchGlobal","args":{"query":"2.1"}}
+{"ts":"2026-09-29T15:23:59.856Z","tool":"searchGlobal","args":{"query":"4.1"}}
+{"ts":"2026-09-29T15:23:59.857Z","tool":"searchGlobal","args":{"query":"6.1"}}
+{"ts":"2026-09-29T15:23:59.857Z","tool":"searchGlobal","args":{"query":"8.1"}}
+{"ts":"2026-09-29T15:23:59.857Z","tool":"searchGlobal","args":{"query":"10.1"}}
+{"ts":"2026-09-29T15:23:59.857Z","tool":"searchGlobal","args":{"query":"environmental limits"}}
+{"ts":"2026-09-29T15:24:55.480Z","tool":"searchGlobal","args":{"query":"protocol"}}
+{"ts":"2026-09-29T15:24:55.481Z","tool":"searchGlobal","args":{"query":"coil"}}
+{"ts":"2026-09-29T15:24:55.481Z","tool":"searchGlobal","args":{"query":"budget"}}
+{"ts":"2026-09-29T15:24:55.481Z","tool":"searchGlobal","args":{"query":"calibration"}}
+{"ts":"2026-09-29T15:24:55.481Z","tool":"searchGlobal","args":{"query":"flux table"}}
+{"ts":"2026-09-29T15:25:26.020Z","tool":"pickAnchor","args":{"commentNumber":52,"evidence":"Unresolvable: no block contains \"sampling rate\", \"sample rate\", or \"sampling\"; the comment names only a generic sampling-rate concern, yet every requirement block (#40–#72 and later sections) describes sampling at some Hz with identical phrasing — no unique referent.","unresolvable":true}}
+{"ts":"2026-09-29T15:25:26.023Z","tool":"pickAnchor","args":{"commentNumber":53,"evidence":"Unresolvable: \"thermal monitor\" requirements appear at least 7 times in BEFORE (#42, #44, #46, #47, #51, #54, #55) with identical sentence shape and more instances later in the document; the comment cites no condition ID, section, or distinguishing text, so no single block can be determined.","unresolvable":true}}
+{"ts":"2026-09-29T15:25:26.023Z","tool":"pickAnchor","args":{"commentNumber":54,"evidence":"Unresolvable: \"bus controller\" requirements appear at before #41, #48, #58, #71, #72 and more instances later (e.g., near after #954); the word \"revision\" occurs nowhere in either document, and the comment cites no condition ID or section — no unique block.","unresolvable":true}}
+{"ts":"2026-09-29T15:25:26.023Z","tool":"pickAnchor","args":{"commentNumber":55,"evidence":"Unresolvable: \"clock tree\" requirements appear at before #40, #43, #57, #59, #63 with identical phrasing; \"reference condition\" text exists only in AFTER-doc REV2 additions (none for clock tree), and the comment cites no condition ID — no unique block.","unresolvable":true}}
+{"ts":"2026-09-29T15:25:26.023Z","tool":"pickAnchor","args":{"commentNumber":56,"evidence":"Unresolvable: \"memory scrubber\" requirements appear at before #52, #56, #62, #64, #68, #91, #92, #132, #133, #174, #182 and more; the comment's \"limit\" concern matches no distinctive text (\"limit\" appears only in the heading '5 Environmental limits' at #1320), and no condition ID or section is cited — no unique block.","unresolvable":true}}
+{"ts":"2026-09-29T15:25:26.024Z","tool":"pickAnchor","args":{"commentNumber":57,"evidence":"Unresolvable: content does not exist — \"unicorn\", \"unicorn protocol\", \"protocol\", and \"flux table\" all return zero matches in both documents; there is no appendix section at all (\"appendix\" also 0 matches).","unresolvable":true}}
+{"ts":"2026-09-29T15:25:26.024Z","tool":"pickAnchor","args":{"commentNumber":58,"evidence":"Unresolvable: content does not exist — \"warp\", \"warp coil\", and \"coil\" return zero matches, and \"appendix\" returns zero matches, so no Appendix Z exists in the BEFORE document.","unresolvable":true}}
+{"ts":"2026-09-29T15:25:26.024Z","tool":"pickAnchor","args":{"commentNumber":59,"evidence":"Unresolvable: content does not exist — \"quantum telemetry\", \"telemetry\", \"latency\", and \"budget\" all return zero matches in both documents.","unresolvable":true}}
+{"ts":"2026-09-29T15:25:26.024Z","tool":"pickAnchor","args":{"commentNumber":60,"evidence":"Unresolvable: content does not exist — \"dilithium\", \"dilithium calibration\", and \"calibration\" all return zero matches in both documents; no such table or reference is present.","unresolvable":true}}
+{"ts":"2026-09-29T15:25:26.068Z","tool":"pickAnchor","comment":52,"unresolvable":"Unresolvable: no block contains \"sampling rate\", \"sample rate\", or \"sampling\"; the comment names only a generic sampling-rate concern, yet every requirement block (#40–#72 and later sections) describes sampling at some Hz with identical phrasing — no unique referent."}
+{"ts":"2026-09-29T15:25:26.098Z","tool":"pickAnchor","comment":53,"unresolvable":"Unresolvable: \"thermal monitor\" requirements appear at least 7 times in BEFORE (#42, #44, #46, #47, #51, #54, #55) with identical sentence shape and more instances later in the document; the comment cites no condition ID, section, or distinguishing text, so no single block can be determined."}
+{"ts":"2026-09-29T15:25:26.121Z","tool":"pickAnchor","comment":54,"unresolvable":"Unresolvable: \"bus controller\" requirements appear at before #41, #48, #58, #71, #72 and more instances later (e.g., near after #954); the word \"revision\" occurs nowhere in either document, and the comment cites no condition ID or section — no unique block."}
+{"ts":"2026-09-29T15:25:26.142Z","tool":"pickAnchor","comment":55,"unresolvable":"Unresolvable: \"clock tree\" requirements appear at before #40, #43, #57, #59, #63 with identical phrasing; \"reference condition\" text exists only in AFTER-doc REV2 additions (none for clock tree), and the comment cites no condition ID — no unique block."}
+{"ts":"2026-09-29T15:25:26.160Z","tool":"pickAnchor","comment":56,"unresolvable":"Unresolvable: \"memory scrubber\" requirements appear at before #52, #56, #62, #64, #68, #91, #92, #132, #133, #174, #182 and more; the comment's \"limit\" concern matches no distinctive text (\"limit\" appears only in the heading '5 Environmental limits' at #1320), and no condition ID or section is cited — no unique block."}
+{"ts":"2026-09-29T15:25:26.175Z","tool":"pickAnchor","comment":57,"unresolvable":"Unresolvable: content does not exist — \"unicorn\", \"unicorn protocol\", \"protocol\", and \"flux table\" all return zero matches in both documents; there is no appendix section at all (\"appendix\" also 0 matches)."}
+{"ts":"2026-09-29T15:25:26.189Z","tool":"pickAnchor","comment":58,"unresolvable":"Unresolvable: content does not exist — \"warp\", \"warp coil\", and \"coil\" return zero matches, and \"appendix\" returns zero matches, so no Appendix Z exists in the BEFORE document."}
+{"ts":"2026-09-29T15:25:26.201Z","tool":"pickAnchor","comment":59,"unresolvable":"Unresolvable: content does not exist — \"quantum telemetry\", \"telemetry\", \"latency\", and \"budget\" all return zero matches in both documents."}
+{"ts":"2026-09-29T15:25:26.213Z","tool":"pickAnchor","comment":60,"unresolvable":"Unresolvable: content does not exist — \"dilithium\", \"dilithium calibration\", and \"calibration\" all return zero matches in both documents; no such table or reference is present."}
+{"ts":"2026-09-29T15:25:32.314Z","tool":"completeAnchoring","args":{}}

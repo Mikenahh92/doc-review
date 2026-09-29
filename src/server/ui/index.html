@@ -174,7 +174,6 @@ function renderDetail(){
     <div class="tabs">
       <button class="${tab==="overview"?"on":""}" onclick="tab='overview';openCommentNum=null;render()">Overview</button>
       <button class="${tab==="verdicts"?"on":""}" onclick="tab='verdicts';openCommentNum=null;render()">Verdicts</button>
-      <button class="${tab==="styling"?"on":""}" onclick="tab='styling';openCommentNum=null;render()">Styling</button>
       <button class="${tab==="report"?"on":""}" onclick="tab='report';openCommentNum=null;render()">Report</button>
     </div>
   </div>
@@ -182,7 +181,6 @@ function renderDetail(){
   const el=$("#tabbody");
   if(tab==="overview")el.innerHTML=htmlOverview();
   if(tab==="verdicts"){el.innerHTML=htmlVerdicts();if(openCommentNum!=null)openComment(openCommentNum);}
-  if(tab==="styling")el.innerHTML=htmlStyling();
   if(tab==="report")el.innerHTML=htmlReport();
 }
 function htmlOverview(){
@@ -236,22 +234,6 @@ async function openComment(num){
     ${r?`<div class="note">Evidence: ${esc2(r.evidence).slice(0,300)}${r.note?" · "+esc2(r.note).slice(0,150):""}</div>`:`<div class="note">no verdict yet</div>`}
   </div>`;
   $("#detail").scrollIntoView({behavior:"smooth"});
-}
-function htmlStyling(){
-  const fs=[...(run.autoChecks??[]),...run.tasks.flatMap(t=>t.findings??[])];
-  const n=sev=>fs.filter(f=>f.severity===sev).length;
-  return `<div class="card"><h3>Styling validation — reviewed doc</h3>
-    <div class="kpis">
-      <div class="kpi"><b>${fs.length}</b><span>checked</span></div>
-      <div class="kpi"><b style="color:#1e7a2e">${n("pass")}</b><span>pass</span></div>
-      <div class="kpi"><b style="color:#a06b00">${n("warning")}</b><span>warnings</span></div>
-      <div class="kpi"><b style="color:#b02020">${n("violation")}</b><span>violations</span></div>
-    </div>
-    <table><tr><th>Rule</th><th>Location</th><th>Severity</th><th>Evidence</th></tr>
-    ${fs.map(f=>`<tr><td><b>${f.ruleId}</b></td><td class="dim">${f.page?"p"+f.page+(f.location?" · "+f.location:""):(f.location??"—")}</td>
-      <td><span class="pill ${f.severity==="pass"?"ok":f.severity==="warning"?"warn":"bad"}">${f.severity}</span></td>
-      <td>${esc(f.evidence).slice(0,90)}${f.suggestedFix?`<div class="dim">fix: ${esc(f.suggestedFix).slice(0,70)}</div>`:""}</td></tr>`).join("")||`<tr><td colspan="4" class="dim">no styling findings</td></tr>`}
-    </table></div>`;
 }
 function htmlReport(){
   const rs=allResults(),ok=rs.filter(r=>r.verdict==="correctly_applied").length,nu=rs.filter(r=>r.verdict==="needs_user").length,prob=rs.length-ok-nu;

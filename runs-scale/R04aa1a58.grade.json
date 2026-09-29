@@ -1,0 +1,89 @@
+{
+  "mins": "13.1",
+  "verdict": "needs_changes",
+  "anchorMethods": {
+    "section": 36,
+    "content": 15,
+    "failed": 9
+  },
+  "byGroup": {
+    "A": {
+      "pass": 24,
+      "total": 24,
+      "anchorPass": 24
+    },
+    "B": {
+      "pass": 4,
+      "total": 8,
+      "anchorPass": 8
+    },
+    "C": {
+      "pass": 4,
+      "total": 4,
+      "anchorPass": 4
+    },
+    "D": {
+      "pass": 6,
+      "total": 6,
+      "anchorPass": 6
+    },
+    "E": {
+      "pass": 4,
+      "total": 4,
+      "anchorPass": 4
+    },
+    "F": {
+      "pass": 5,
+      "total": 5,
+      "anchorPass": 5
+    },
+    "G": {
+      "pass": 5,
+      "total": 5,
+      "anchorPass": 5
+    },
+    "H": {
+      "pass": 4,
+      "total": 4,
+      "anchorPass": 4
+    }
+  },
+  "strict": [
+    47,
+    51
+  ],
+  "tolerant": [
+    9,
+    9
+  ],
+  "mismatches": [
+    {
+      "n": 25,
+      "group": "B",
+      "expected": "correctly_applied",
+      "got": "incorrectly_applied",
+      "anchor": "section"
+    },
+    {
+      "n": 26,
+      "group": "B",
+      "expected": "correctly_applied",
+      "got": "incorrectly_applied",
+      "anchor": "section"
+    },
+    {
+      "n": 27,
+      "group": "B",
+      "expected": "correctly_applied",
+      "got": "incorrectly_applied",
+      "anchor": "section"
+    },
+    {
+      "n": 28,
+      "group": "B",
+      "expected": "correctly_applied",
+      "got": "incorrectly_applied",
+      "anchor": "section"
+    }
+  ]
+}

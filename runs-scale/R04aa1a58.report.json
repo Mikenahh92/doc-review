@@ -1,0 +1,606 @@
+{
+  "run_id": "R04aa1a58",
+  "created_at": "2026-09-29T15:19:32.747Z",
+  "summary": {
+    "before": "before.docx · ~87 pages (est.) · 3887 blocks (50 headings, 20 tables)",
+    "after": "after.docx · ~87 pages (est.) · 3887 blocks (50 headings, 20 tables)",
+    "diff_hunks": 18,
+    "comments": {
+      "total": 60,
+      "anchored": 51,
+      "verdicts": {
+        "correctly_applied": 23,
+        "missing": 24,
+        "incorrectly_applied": 4,
+        "needs_user": 9
+      }
+    },
+    "anchor_methods": {
+      "section": 36,
+      "content": 15,
+      "failed": 9
+    }
+  },
+  "verdict": "needs_changes",
+  "comment_verdicts": [
+    {
+      "commentNumber": 1,
+      "verdict": "correctly_applied",
+      "evidence": "before #111: \"The memory scrubber shall sample channel 0 at 100 Hz; tolerance ±9% under condition L71.\" → after #111: same sentence + \" REV2: reference condition is 25 °C (MKT-1000).\" Block 111 lies within section 1.1 (anchor blocks 39–145). The requirement text is otherwise unchanged.",
+      "note": "Reference condition (25 °C, MKT-1000) appended to the exact requirement quoted in the comment, in the correct section.",
+      "confidence": "high",
+      "task": "T1",
+      "comment": "Section 1.1: the requirement \"The memory scrubber shall sample channel 0 at 100 Hz; tolerance ±9% under condition L71.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 2,
+      "verdict": "missing",
+      "evidence": "before #154: \"The acquisition module shall sample channel 0 at 200 Hz; tolerance ±2% under condition L112.\" — after #154 contains the identical sentence with no reference condition added. A REV2 addition exists at after #1180 (\"The bus controller shall sample channel 0 at 50 Hz; tolerance ±8% under condition L1122. REV2: reference condition is 25 °C (MKT-1010).\") but that is a different requirement and not section 1.2.",
+      "note": "Target requirement in section 1.2 is unchanged in the reviewed document; no reference condition was added there.",
+      "confidence": "high",
+      "task": "T1",
+      "comment": "Section 1.2: the requirement \"The acquisition module shall sample channel 0 at 200 Hz; tolerance ±2% under condition L112.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 3,
+      "verdict": "correctly_applied",
+      "evidence": "before #271: \"The acquisition module shall sample channel 0 at 100 Hz; tolerance ±9% under condition L228.\" → after #271: same sentence + \" REV2: reference condition is 25 °C (MKT-1002).\" Block 271 lies within section 1.3 (anchor blocks 252–358).",
+      "note": "Reference condition added to the exact quoted requirement, in the correct section.",
+      "confidence": "high",
+      "task": "T1",
+      "comment": "Section 1.3: the requirement \"The acquisition module shall sample channel 0 at 100 Hz; tolerance ±9% under condition L228.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 4,
+      "verdict": "missing",
+      "evidence": "before #368: \"The memory scrubber shall sample channel 0 at 200 Hz; tolerance ±3% under condition L322.\" — after #368 contains the identical sentence; a global search for \"L322\" and \"reference condition\" finds no REV2/reference-condition addition for this requirement.",
+      "note": "Target requirement in section 2.1 is unchanged in the reviewed document.",
+      "confidence": "high",
+      "task": "T1",
+      "comment": "Section 2.1: the requirement \"The memory scrubber shall sample channel 0 at 200 Hz; tolerance ±3% under condition L322.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 5,
+      "verdict": "correctly_applied",
+      "evidence": "before #528: \"The thermal monitor shall sample channel 0 at 100 Hz; tolerance ±3% under condition L481.\" → after #528: same sentence + \" REV2: reference condition is 25 °C (MKT-1004).\" Block 528 lies within section 2.2 (anchor blocks 466–572).",
+      "note": "Reference condition added to the exact quoted requirement, in the correct section.",
+      "confidence": "high",
+      "task": "T1",
+      "comment": "Section 2.2: the requirement \"The thermal monitor shall sample channel 0 at 100 Hz; tolerance ±3% under condition L481.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 6,
+      "verdict": "missing",
+      "evidence": "before #581: \"The memory scrubber shall sample channel 0 at 200 Hz; tolerance ±1% under condition L532.\" — after #581 contains the identical sentence; search for \"L532\" returns only these two identical matches, no reference-condition addition.",
+      "note": "Target requirement in section 2.3 is unchanged in the reviewed document.",
+      "confidence": "high",
+      "task": "T1",
+      "comment": "Section 2.3: the requirement \"The memory scrubber shall sample channel 0 at 200 Hz; tolerance ±1% under condition L532.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 7,
+      "verdict": "correctly_applied",
+      "evidence": "before #710: \"The thermal monitor shall sample channel 0 at 50 Hz; tolerance ±5% under condition L659.\" → after #710: same sentence + \" REV2: reference condition is 25 °C (MKT-1006).\" Block 710 lies within section 3.1 (anchor blocks 680–786).",
+      "note": "Reference condition added to the exact quoted requirement, in the correct section.",
+      "confidence": "high",
+      "task": "T1",
+      "comment": "Section 3.1: the requirement \"The thermal monitor shall sample channel 0 at 50 Hz; tolerance ±5% under condition L659.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 8,
+      "verdict": "missing",
+      "evidence": "before #795: \"The clock tree shall sample channel 0 at 200 Hz; tolerance ±2% under condition L742.\" — after #795 contains the identical sentence; search for \"L742\" returns only these two identical matches, no reference-condition addition.",
+      "note": "Target requirement in section 3.2 is unchanged in the reviewed document.",
+      "confidence": "high",
+      "task": "T1",
+      "comment": "Section 3.2: the requirement \"The clock tree shall sample channel 0 at 200 Hz; tolerance ±2% under condition L742.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 9,
+      "verdict": "correctly_applied",
+      "evidence": "before #954: \"The bus controller shall sample channel 0 at 100 Hz; tolerance ±4% under condition L900.\" → after #954: same sentence + \" REV2: reference condition is 25 °C (MKT-1008).\" Block 954 lies within section 3.3 (anchor blocks 893–999).",
+      "note": "Reference condition added to the exact quoted requirement, in the correct section.",
+      "confidence": "high",
+      "task": "T1",
+      "comment": "Section 3.3: the requirement \"The bus controller shall sample channel 0 at 100 Hz; tolerance ±4% under condition L900.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 10,
+      "verdict": "missing",
+      "evidence": "before #1009: \"The clock tree shall sample channel 0 at 200 Hz; tolerance ±5% under condition L952.\" — after #1009 contains the identical sentence; search for \"L952\" returns only these two identical matches, no reference-condition addition.",
+      "note": "Target requirement in section 4.1 is unchanged in the reviewed document.",
+      "confidence": "high",
+      "task": "T1",
+      "comment": "Section 4.1: the requirement \"The clock tree shall sample channel 0 at 200 Hz; tolerance ±5% under condition L952.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 11,
+      "verdict": "correctly_applied",
+      "evidence": "after #1180: \"The bus controller shall sample channel 0 at 50 Hz; tolerance ±8% under condition L1122. REV2: reference condition is 25 °C (MKT-1010).\" The before document (#1180) lacked the REV2 note. Block 1180 lies within section 4.2 (anchor blocks 1107–1213) and the component/frequency/tolerance/condition ID match the comment's quoted requirement exactly.",
+      "note": "Reference condition \"25 °C (MKT-1010)\" appended to the requirement per the author's reply (see revision note).",
+      "confidence": "high",
+      "task": "T2",
+      "comment": "Section 4.2: the requirement \"The bus controller shall sample channel 0 at 50 Hz; tolerance ±8% under condition L1122.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 12,
+      "verdict": "missing",
+      "evidence": "after #1222: \"The clock tree shall sample channel 0 at 50 Hz; tolerance ±4% under condition L1162.\" — identical to before #1222; no REV2/reference-condition note was added in section 4.3 (anchor 1214–1319) or anywhere else (searchGlobal \"MKT-1011\" returns 0 matches).",
+      "note": "Register says processed=yes, but no reference condition was added for L1162 despite the author's reply claiming it was.",
+      "confidence": "high",
+      "task": "T2",
+      "comment": "Section 4.3: the requirement \"The clock tree shall sample channel 0 at 50 Hz; tolerance ±4% under condition L1162.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 13,
+      "verdict": "correctly_applied",
+      "evidence": "after #1406: \"The memory scrubber shall sample channel 0 at 100 Hz; tolerance ±5% under condition L1344. REV2: reference condition is 25 °C (MKT-1012).\" The before document (#1406) lacked the REV2 note. Block 1406 lies within section 5.1 (anchor blocks 1321–1427) and matches the comment's quoted requirement.",
+      "note": "Reference condition \"25 °C (MKT-1012)\" appended to the requirement per the author's reply.",
+      "confidence": "high",
+      "task": "T2",
+      "comment": "Section 5.1: the requirement \"The memory scrubber shall sample channel 0 at 100 Hz; tolerance ±5% under condition L1344.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 14,
+      "verdict": "missing",
+      "evidence": "after #1436: \"The thermal monitor shall sample channel 0 at 50 Hz; tolerance ±9% under condition L1372.\" — identical to before #1436; no reference condition was added in section 5.2 (anchor 1428–1533) or anywhere else.",
+      "note": "Register says processed=yes, but no reference condition was added for L1372 despite the author's reply claiming it was.",
+      "confidence": "high",
+      "task": "T2",
+      "comment": "Section 5.2: the requirement \"The thermal monitor shall sample channel 0 at 50 Hz; tolerance ±9% under condition L1372.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 15,
+      "verdict": "correctly_applied",
+      "evidence": "after #1573: \"The memory scrubber shall sample channel 0 at 100 Hz; tolerance ±7% under condition L1508. REV2: reference condition is 25 °C (MKT-1014).\" The before document (#1573) lacked the REV2 note. Block 1573 lies within section 5.3 (anchor blocks 1534–1640) and matches the comment's quoted requirement.",
+      "note": "Reference condition \"25 °C (MKT-1014)\" appended to the requirement per the author's reply.",
+      "confidence": "high",
+      "task": "T2",
+      "comment": "Section 5.3: the requirement \"The memory scrubber shall sample channel 0 at 100 Hz; tolerance ±7% under condition L1508.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 16,
+      "verdict": "missing",
+      "evidence": "after #1650: \"The clock tree shall sample channel 0 at 100 Hz; tolerance ±6% under condition L1582.\" — identical to before #1650; no reference condition was added in section 6.1 (anchor 1642–1747) or anywhere else.",
+      "note": "Register says processed=yes, but no reference condition was added for L1582 despite the author's reply claiming it was.",
+      "confidence": "high",
+      "task": "T2",
+      "comment": "Section 6.1: the requirement \"The clock tree shall sample channel 0 at 100 Hz; tolerance ±6% under condition L1582.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 17,
+      "verdict": "correctly_applied",
+      "evidence": "after #1805: \"The thermal monitor shall sample channel 0 at 200 Hz; tolerance ±5% under condition L1736. REV2: reference condition is 25 °C (MKT-1016).\" The before document (#1805) lacked the REV2 note. Block 1805 lies within section 6.2 (anchor blocks 1748–1854) and matches the comment's quoted requirement.",
+      "note": "Reference condition \"25 °C (MKT-1016)\" appended to the requirement per the author's reply.",
+      "confidence": "high",
+      "task": "T2",
+      "comment": "Section 6.2: the requirement \"The thermal monitor shall sample channel 0 at 200 Hz; tolerance ±5% under condition L1736.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 18,
+      "verdict": "missing",
+      "evidence": "after #1863: \"The clock tree shall sample channel 0 at 50 Hz; tolerance ±8% under condition L1792.\" — identical to before #1863; no reference condition was added in section 6.3 (anchor 1855–1960) or anywhere else.",
+      "note": "Register says processed=yes, but no reference condition was added for L1792 despite the author's reply claiming it was.",
+      "confidence": "high",
+      "task": "T2",
+      "comment": "Section 6.3: the requirement \"The clock tree shall sample channel 0 at 50 Hz; tolerance ±8% under condition L1792.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 19,
+      "verdict": "correctly_applied",
+      "evidence": "after #2003: \"The clock tree shall sample channel 0 at 50 Hz; tolerance ±1% under condition L1930. REV2: reference condition is 25 °C (MKT-1018).\" The before document (#2003) lacked the REV2 note. Block 2003 lies within section 7.1 (anchor blocks 1962–2068) and matches the comment's quoted requirement.",
+      "note": "Reference condition \"25 °C (MKT-1018)\" appended to the requirement per the author's reply.",
+      "confidence": "high",
+      "task": "T2",
+      "comment": "Section 7.1: the requirement \"The clock tree shall sample channel 0 at 50 Hz; tolerance ±1% under condition L1930.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 20,
+      "verdict": "missing",
+      "evidence": "after #2077: \"The thermal monitor shall sample channel 0 at 100 Hz; tolerance ±3% under condition L2002.\" — identical to before #2077; no reference condition was added in section 7.2 (anchor 2069–2174) or anywhere else.",
+      "note": "Register says processed=yes, but no reference condition was added for L2002 despite the author's reply claiming it was.",
+      "confidence": "high",
+      "task": "T2",
+      "comment": "Section 7.2: the requirement \"The thermal monitor shall sample channel 0 at 100 Hz; tolerance ±3% under condition L2002.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 21,
+      "verdict": "correctly_applied",
+      "evidence": "before #2194: \"The clock tree shall sample channel 0 at 100 Hz; tolerance ±6% under condition L2118.\" → after #2194: same sentence plus \"REV2: reference condition is 25 °C (MKT-1020).\" Block 2194 lies inside section 7.3 (anchor 2175, sectionEnd 2281).",
+      "note": "The quoted requirement was located in section 7.3 and the reference condition (25 °C, ref MKT-1020) was added to it, satisfying the comment and matching the author reply.",
+      "confidence": "high",
+      "task": "T3",
+      "comment": "Section 7.3: the requirement \"The clock tree shall sample channel 0 at 100 Hz; tolerance ±6% under condition L2118.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 22,
+      "verdict": "missing",
+      "evidence": "before #2291 and after #2291 are identical: \"The memory scrubber shall sample channel 0 at 100 Hz; tolerance ±5% under condition L2212.\" — no reference condition added. getDiff(22) reports \"no diff hunks near this anchor\" for section 8.1 (2283–2388); searchGlobal \"MKT-1021\" returns 0 matches.",
+      "note": "Register says processed=yes, but the requirement in section 8.1 is unchanged in the reviewed document; no reference condition was added.",
+      "confidence": "high",
+      "task": "T3",
+      "comment": "Section 8.1: the requirement \"The memory scrubber shall sample channel 0 at 100 Hz; tolerance ±5% under condition L2212.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 23,
+      "verdict": "correctly_applied",
+      "evidence": "before #2421: \"The clock tree shall sample channel 0 at 100 Hz; tolerance ±7% under condition L2341.\" → after #2421: same sentence plus \"REV2: reference condition is 25 °C (MKT-1022).\" Block 2421 lies inside section 8.2 (anchor 2389, sectionEnd 2495).",
+      "note": "The quoted requirement was located in section 8.2 and the reference condition (25 °C, ref MKT-1022) was added to it, satisfying the comment.",
+      "confidence": "high",
+      "task": "T3",
+      "comment": "Section 8.2: the requirement \"The clock tree shall sample channel 0 at 100 Hz; tolerance ±7% under condition L2341.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 24,
+      "verdict": "missing",
+      "evidence": "before #2504 and after #2504 are identical: \"The thermal monitor shall sample channel 0 at 200 Hz; tolerance ±7% under condition L2422.\" — no reference condition added. getDiff(24) reports \"no diff hunks near this anchor\" for section 8.3 (2496–2601); searchGlobal \"MKT-1023\" returns 0 matches.",
+      "note": "Register says processed=yes, but the requirement in section 8.3 is unchanged in the reviewed document; no reference condition was added.",
+      "confidence": "high",
+      "task": "T3",
+      "comment": "Section 8.3: the requirement \"The thermal monitor shall sample channel 0 at 200 Hz; tolerance ±7% under condition L2422.\" does not state the reference condition for the tolerance. Add it."
+    },
+    {
+      "commentNumber": 25,
+      "verdict": "incorrectly_applied",
+      "evidence": "Hunk h13 (block 2709, section 9.1 table): BEFORE \"Voltage | 24 V | 23 V | ...\" → AFTER \"Voltage | 24 V (rev2) | 23 V | ...\". The applied tag \"(rev2)\" is not a reference condition; the document states reference conditions only in the full form \"REV2: reference condition is 25 °C (MKT-XXXX)\" (e.g., after #2194), and neither document defines \"rev2\" as a condition.",
+      "note": "A change was made to the nominal voltage cell, but it appends an undefined revision tag instead of stating the reference condition (e.g., 25 °C); the comment's request is not satisfied.",
+      "confidence": "medium",
+      "task": "T3",
+      "comment": "The nominal voltage value in the table of section 9.1 needs its reference condition stated."
+    },
+    {
+      "commentNumber": 26,
+      "verdict": "incorrectly_applied",
+      "evidence": "Hunk h14 (block 2816, section 9.2 table): BEFORE \"Voltage | 24 V | 23 V | ...\" → AFTER \"Voltage | 24 V (rev2) | 23 V | ...\". \"(rev2)\" is an undefined revision tag, not a reference condition; no definition of \"rev2\" exists in either document.",
+      "note": "A change was made to the nominal voltage cell, but it does not state the reference condition; the comment's request is not satisfied.",
+      "confidence": "medium",
+      "task": "T3",
+      "comment": "The nominal voltage value in the table of section 9.2 needs its reference condition stated."
+    },
+    {
+      "commentNumber": 27,
+      "verdict": "incorrectly_applied",
+      "evidence": "Hunk h15 (block 2923, section 9.3 table): BEFORE \"Voltage | 24 V | 23 V | ...\" → AFTER \"Voltage | 24 V (rev2) | 23 V | ...\". \"(rev2)\" is an undefined revision tag, not a reference condition; no definition of \"rev2\" exists in either document.",
+      "note": "A change was made to the nominal voltage cell, but it does not state the reference condition; the comment's request is not satisfied.",
+      "confidence": "medium",
+      "task": "T3",
+      "comment": "The nominal voltage value in the table of section 9.3 needs its reference condition stated."
+    },
+    {
+      "commentNumber": 28,
+      "verdict": "incorrectly_applied",
+      "evidence": "Hunk h16 (block 3031, section 10.1 table): BEFORE \"Voltage | 24 V | 23 V | ...\" → AFTER \"Voltage | 24 V (rev2) | 23 V | ...\". \"(rev2)\" is an undefined revision tag, not a reference condition; no definition of \"rev2\" exists in either document.",
+      "note": "A change was made to the nominal voltage cell, but it does not state the reference condition; the comment's request is not satisfied.",
+      "confidence": "medium",
+      "task": "T3",
+      "comment": "The nominal voltage value in the table of section 10.1 needs its reference condition stated."
+    },
+    {
+      "commentNumber": 29,
+      "verdict": "missing",
+      "evidence": "Table at block 3138 (section 10.2) is unchanged: before and after both read \"Parameter | Nominal | Measured | Voltage | 24 V | 23 V | Current | 1.5 A | 1.48 A | Frequency | 60 Hz | 59 Hz\". getDiff(29) reports \"no diff hunks near this anchor\".",
+      "note": "Register says processed=yes, but the nominal voltage in the section 10.2 table carries no reference condition in the reviewed document.",
+      "confidence": "high",
+      "task": "T3",
+      "comment": "The nominal voltage value in the table of section 10.2 needs its reference condition stated."
+    },
+    {
+      "commentNumber": 30,
+      "verdict": "missing",
+      "evidence": "Table at block 3245 (section 10.3) is unchanged: before and after both read \"Parameter | Nominal | Measured | Voltage | 24 V | 23 V | Current | 1.5 A | 1.48 A | Frequency | 60 Hz | 59 Hz\". getDiff(30) reports \"no diff hunks near this anchor\".",
+      "note": "Register says processed=yes, but the nominal voltage in the section 10.3 table carries no reference condition in the reviewed document.",
+      "confidence": "high",
+      "task": "T3",
+      "comment": "The nominal voltage value in the table of section 10.3 needs its reference condition stated."
+    },
+    {
+      "commentNumber": 31,
+      "verdict": "missing",
+      "evidence": "Table at block 3353 (section 11.1) is identical in before and after: \"Parameter | Nominal | Measured | Voltage | 24 V | 23 V | Current | 1.5 A | 1.40 A | Frequency | 60 Hz | 59 Hz\". No reference condition was added to the nominal voltage value, and no modified variant of this table appears elsewhere in the reviewed document.",
+      "note": "Register says processed=yes, but the reviewed document shows no change to the section 11.1 table; the nominal voltage still lacks a reference condition.",
+      "confidence": "high",
+      "task": "T4",
+      "comment": "The nominal voltage value in the table of section 11.1 needs its reference condition stated."
+    },
+    {
+      "commentNumber": 32,
+      "verdict": "missing",
+      "evidence": "Table at block 3460 (section 11.2) is identical in before and after: \"Parameter | Nominal | Measured | Voltage | 24 V | 23 V | Current | 1.5 A | 1.44 A | Frequency | 60 Hz | 59 Hz\". The only nearby after-doc change is at block 3462 (\"The clock tree shall sample channel 0 at 100 Hz; tolerance ±7% under condition L3360. REV2: reference condition is 25 °C (MKT-1032).\"), which is a paragraph in section 11.3 and corresponds to comment 33's requirement — not the 11.2 table.",
+      "note": "The section 11.2 table itself received no reference-condition addition.",
+      "confidence": "high",
+      "task": "T4",
+      "comment": "The nominal voltage value in the table of section 11.2 needs its reference condition stated."
+    },
+    {
+      "commentNumber": 33,
+      "verdict": "correctly_applied",
+      "evidence": "Before block 3462: \"The clock tree shall sample channel 0 at 100 Hz; tolerance ±7% under condition L3360.\" After block 3462: \"The clock tree shall sample channel 0 at 100 Hz; tolerance ±7% under condition L3360. REV2: reference condition is 25 °C (MKT-1032).\"",
+      "note": "Reference condition stated exactly as the author replied (\"Reference condition added.\"); matches the comment's location in section 11.3.",
+      "confidence": "high",
+      "task": "T4",
+      "comment": "Section 11.3: the requirement \"The clock tree shall sample channel 0 at 100 Hz; tolerance ±7% under condition L3360.\" must mention the reference condition."
+    },
+    {
+      "commentNumber": 34,
+      "verdict": "correctly_applied",
+      "evidence": "searchGlobal L3499: before #3603 \"The bus controller shall sample channel 0 at 200 Hz; tolerance ±4% under condition L3499.\" vs after #3603 \"The bus controller shall sample channel 0 at 200 Hz; tolerance ±4% under condition L3499. REV2: reference condition is 25 °C (MKT-1033).\" Block 3603 is within the comment's section range 3568–3673 (12.1).",
+      "note": "Requirement uniquely identified by condition ID L3499; reference condition added.",
+      "confidence": "high",
+      "task": "T4",
+      "comment": "Section 12.1: the requirement \"The bus controller shall sample channel 0 at 200 Hz; tolerance ±4% under condition L3499.\" must mention the reference condition."
+    },
+    {
+      "commentNumber": 35,
+      "verdict": "missing",
+      "evidence": "searchGlobal L3577 returns identical text in both documents: before #3682 = after #3682 \"The thermal monitor shall sample channel 0 at 100 Hz; tolerance ±6% under condition L3577.\" No REV2 reference-condition note was appended.",
+      "note": "Register says processed=yes, but no change exists for this requirement in section 12.2.",
+      "confidence": "high",
+      "task": "T4",
+      "comment": "Section 12.2: the requirement \"The thermal monitor shall sample channel 0 at 100 Hz; tolerance ±6% under condition L3577.\" must mention the reference condition."
+    },
+    {
+      "commentNumber": 36,
+      "verdict": "missing",
+      "evidence": "searchGlobal L3682 returns identical text in both documents: before #3788 = after #3788 \"The clock tree shall sample channel 0 at 50 Hz; tolerance ±7% under condition L3682.\" No REV2 reference-condition note was appended.",
+      "note": "Register says processed=yes, but no change exists for this requirement in section 12.3.",
+      "confidence": "high",
+      "task": "T4",
+      "comment": "Section 12.3: the requirement \"The clock tree shall sample channel 0 at 50 Hz; tolerance ±7% under condition L3682.\" must mention the reference condition."
+    },
+    {
+      "commentNumber": 37,
+      "verdict": "correctly_applied",
+      "evidence": "searchGlobal L71: before #111 \"The memory scrubber shall sample channel 0 at 100 Hz; tolerance ±9% under condition L71.\" vs after #111 \"...under condition L71. REV2: reference condition is 25 °C (MKT-1000).\" The cited sentence with condition ID L71 is unique to block 111 in both documents.",
+      "note": "The requirement cited in the comment (L71) received the reference-condition addition, consistent with the fix pattern used for the parallel comments 33/34 (\"Reference condition added.\"). The content anchor (block 52) is imprecise, but the quoted sentence unambiguously identifies the target.",
+      "confidence": "high",
+      "task": "T4",
+      "comment": "The requirement \"The memory scrubber shall sample channel 0 at 100 Hz; tolerance ±9% under condition L71.\" is ambiguous about the tolerance source."
+    },
+    {
+      "commentNumber": 38,
+      "verdict": "correctly_applied",
+      "evidence": "searchGlobal L228: before #271 \"The acquisition module shall sample channel 0 at 100 Hz; tolerance ±9% under condition L228.\" vs after #271 \"...under condition L228. REV2: reference condition is 25 °C (MKT-1002).\" The cited sentence with condition ID L228 is unique to block 271 in both documents.",
+      "note": "The cited requirement (L228) received the reference-condition addition, matching the document-wide remedy for tolerance-source ambiguity. Content anchor (block 45) is imprecise but the quoted sentence is unique.",
+      "confidence": "high",
+      "task": "T4",
+      "comment": "The requirement \"The acquisition module shall sample channel 0 at 100 Hz; tolerance ±9% under condition L228.\" is ambiguous about the tolerance source."
+    },
+    {
+      "commentNumber": 39,
+      "verdict": "correctly_applied",
+      "evidence": "searchGlobal L481: before #528 \"The thermal monitor shall sample channel 0 at 100 Hz; tolerance ±3% under condition L481.\" vs after #528 \"...under condition L481. REV2: reference condition is 25 °C (MKT-1004).\" The cited sentence with condition ID L481 is unique to block 528 in both documents.",
+      "note": "The cited requirement (L481) received the reference-condition addition. Content anchor (block 42) is imprecise but the quoted sentence is unique.",
+      "confidence": "high",
+      "task": "T4",
+      "comment": "The requirement \"The thermal monitor shall sample channel 0 at 100 Hz; tolerance ±3% under condition L481.\" is ambiguous about the tolerance source."
+    },
+    {
+      "commentNumber": 40,
+      "verdict": "missing",
+      "evidence": "searchGlobal L322: before #368 and after #368 are identical: \"The memory scrubber shall sample channel 0 at 200 Hz; tolerance ±3% under condition L322.\" No REV2 reference-condition note was appended (nearby after-doc blocks 366–370 show no addition; the content anchor at block 52 area L8–L16 is also unchanged).",
+      "note": "Register says processed=yes, but the cited requirement (L322, unique at block 368) received no change in the reviewed document.",
+      "confidence": "high",
+      "task": "T4",
+      "comment": "The requirement \"The memory scrubber shall sample channel 0 at 200 Hz; tolerance ±3% under condition L322.\" is ambiguous about the tolerance source."
+    },
+    {
+      "commentNumber": 41,
+      "verdict": "missing",
+      "evidence": "searchGlobal \"L532\": before #581 = after #581, both \"The memory scrubber shall sample channel 0 at 200 Hz; tolerance ±1% under condition L532.\" — identical, no REV2/reference-condition marker added. getDiff(41) returns 0 hunks near anchor block 52.",
+      "note": "No change applied anywhere. The quoted requirement (unique via condition L532) is unchanged in the reviewed document; registered anchor block 52 holds a different requirement (±2% under L12), also unchanged.",
+      "confidence": "high",
+      "task": "T5",
+      "comment": "The requirement \"The memory scrubber shall sample channel 0 at 200 Hz; tolerance ±1% under condition L532.\" is ambiguous about the tolerance source."
+    },
+    {
+      "commentNumber": 42,
+      "verdict": "missing",
+      "evidence": "searchGlobal \"L742\": before #795 = after #795, both \"The clock tree shall sample channel 0 at 200 Hz; tolerance ±2% under condition L742.\" — identical, no marker added. getDiff(42) returns 0 hunks near anchor block 40.",
+      "note": "No change applied. Quoted requirement (unique via condition L742) unchanged; registered anchor block 40 holds a different requirement (±6% under L0), also unchanged.",
+      "confidence": "high",
+      "task": "T5",
+      "comment": "The requirement \"The clock tree shall sample channel 0 at 200 Hz; tolerance ±2% under condition L742.\" is ambiguous about the tolerance source."
+    },
+    {
+      "commentNumber": 43,
+      "verdict": "correctly_applied",
+      "evidence": "getDiff(43) hunk at before/after 710: BEFORE \"The thermal monitor shall sample channel 0 at 50 Hz; tolerance ±5% under condition L659.\" AFTER \"...L659. REV2: reference condition is 25 °C (MKT-1006).\"",
+      "note": "Revision marker MKT-1006 added exactly as stated in the reply; change sits at the registered diff-match anchor block 710.",
+      "confidence": "high",
+      "task": "T5",
+      "comment": "The relevant tolerance requirement should state its revision reference."
+    },
+    {
+      "commentNumber": 44,
+      "verdict": "correctly_applied",
+      "evidence": "getDiff(44) hunk at before/after 954: BEFORE \"The bus controller shall sample channel 0 at 100 Hz; tolerance ±4% under condition L900.\" AFTER \"...L900. REV2: reference condition is 25 °C (MKT-1008).\"",
+      "note": "Revision marker MKT-1008 added exactly as stated in the reply; change sits at the registered diff-match anchor block 954.",
+      "confidence": "high",
+      "task": "T5",
+      "comment": "The relevant tolerance requirement should state its revision reference."
+    },
+    {
+      "commentNumber": 45,
+      "verdict": "correctly_applied",
+      "evidence": "getDiff(45) hunk at before/after 1180: BEFORE \"The bus controller shall sample channel 0 at 50 Hz; tolerance ±8% under condition L1122.\" AFTER \"...L1122. REV2: reference condition is 25 °C (MKT-1010).\"",
+      "note": "Revision marker MKT-1010 added exactly as stated in the reply; change sits at the registered diff-match anchor block 1180.",
+      "confidence": "high",
+      "task": "T5",
+      "comment": "The relevant tolerance requirement should state its revision reference."
+    },
+    {
+      "commentNumber": 46,
+      "verdict": "correctly_applied",
+      "evidence": "getDiff(46) hunk at before/after 1406: BEFORE \"The memory scrubber shall sample channel 0 at 100 Hz; tolerance ±5% under condition L1344.\" AFTER \"...L1344. REV2: reference condition is 25 °C (MKT-1012).\"",
+      "note": "Revision marker MKT-1012 added exactly as stated in the reply; change sits at the registered diff-match anchor block 1406.",
+      "confidence": "high",
+      "task": "T5",
+      "comment": "The relevant tolerance requirement should state its revision reference."
+    },
+    {
+      "commentNumber": 47,
+      "verdict": "correctly_applied",
+      "evidence": "searchGlobal \"L1508\": before #1573 \"The memory scrubber shall sample channel 0 at 100 Hz; tolerance ±7% under condition L1508.\" → after #1573 \"...L1508. REV2: reference condition is 25 °C (MKT-1014).\"",
+      "note": "Comment (verbatim quote incl. L1508) asked for a stated reference condition; one was added at the exact quoted requirement. Registered anchor block 52 was mismatched, but the change is verifiably at the uniquely quoted block #1573 — no guessing involved.",
+      "confidence": "high",
+      "task": "T5",
+      "comment": "This requirement \"The memory scrubber shall sample channel 0 at 100 Hz; tolerance ±7% under condition L1508.\" needs a stated reference condition for its tolerance."
+    },
+    {
+      "commentNumber": 48,
+      "verdict": "correctly_applied",
+      "evidence": "searchGlobal \"L1736\": before #1805 \"The thermal monitor shall sample channel 0 at 200 Hz; tolerance ±5% under condition L1736.\" → after #1805 \"...L1736. REV2: reference condition is 25 °C (MKT-1016).\"",
+      "note": "Comment (verbatim quote incl. L1736) asked for a stated reference condition; one was added at the exact quoted requirement. Registered anchor block 42 was mismatched, but the change is verifiably at the uniquely quoted block #1805.",
+      "confidence": "high",
+      "task": "T5",
+      "comment": "This requirement \"The thermal monitor shall sample channel 0 at 200 Hz; tolerance ±5% under condition L1736.\" needs a stated reference condition for its tolerance."
+    },
+    {
+      "commentNumber": 49,
+      "verdict": "missing",
+      "evidence": "searchGlobal \"L1582\": before #1650 = after #1650, both \"The clock tree shall sample channel 0 at 100 Hz; tolerance ±6% under condition L1582.\" — identical, no reference condition added. getDiff(49) returns 0 hunks near anchor block 40.",
+      "note": "No change applied. Quoted requirement (unique via condition L1582) unchanged in the reviewed document.",
+      "confidence": "high",
+      "task": "T5",
+      "comment": "This requirement \"The clock tree shall sample channel 0 at 100 Hz; tolerance ±6% under condition L1582.\" needs a stated reference condition for its tolerance."
+    },
+    {
+      "commentNumber": 50,
+      "verdict": "missing",
+      "evidence": "searchGlobal \"L1792\": before #1863 = after #1863, both \"The clock tree shall sample channel 0 at 50 Hz; tolerance ±8% under condition L1792.\" — identical, no reference condition added. getDiff(50) returns 0 hunks near anchor block 40.",
+      "note": "No change applied. Quoted requirement (unique via condition L1792) unchanged in the reviewed document.",
+      "confidence": "high",
+      "task": "T5",
+      "comment": "This requirement \"The clock tree shall sample channel 0 at 50 Hz; tolerance ±8% under condition L1792.\" needs a stated reference condition for its tolerance."
+    },
+    {
+      "commentNumber": 51,
+      "verdict": "missing",
+      "evidence": "searchGlobal(\"L2002\"): [before #2077] \"The thermal monitor shall sample channel 0 at 100 Hz; tolerance ±3% under condition L2002.\" = [after #2077] identical text — unchanged. getDiff(51): \"no diff hunks near this anchor\" (anchor block 42, also unchanged: \"The thermal monitor shall sample channel 0 at 50 Hz; tolerance ±7% under condition L2.\"). searchGlobal(\"reference condition\") shows REV2 additions only for conditions L71, L228, L481, L659, L900 — none for L2002.",
+      "note": "No reference condition was added to the requirement quoted in the comment (condition L2002 at block #2077, identical before/after), and no change was made at the anchored block 42 either. The comment was not applied.",
+      "confidence": "high",
+      "task": "T6",
+      "comment": "This requirement \"The thermal monitor shall sample channel 0 at 100 Hz; tolerance ±3% under condition L2002.\" needs a stated reference condition for its tolerance."
+    },
+    {
+      "commentNumber": 52,
+      "verdict": "needs_user",
+      "evidence": "Anchor failed, method=\"failed\", note: \"Unresolvable: no block contains 'sampling rate', 'sample rate', or 'sampling'; the comment names only a generic sampling-rate concern, yet every requirement block (#40–#72 and later sections) describes sampling at some Hz with identical phrasing — no unique referent.\" searchGlobal(\"sampling\") returns 0 matches; requirements use phrasing like before #42 \"The thermal monitor shall sample channel 0 at 50 Hz; tolerance ±7% under condition L2.\"",
+      "note": "Comment is unanchorable: the generic sampling-rate concern matches dozens of identically phrased \"shall sample ... at N Hz\" requirement blocks with no condition ID or section cited. Cannot determine where a clarification was expected — needs human resolution of the target.",
+      "confidence": "high",
+      "task": "T6",
+      "comment": "The sampling rate requirement is ambiguous and must be clarified."
+    },
+    {
+      "commentNumber": 53,
+      "verdict": "needs_user",
+      "evidence": "Anchor failed, method=\"failed\", note: \"Unresolvable: 'thermal monitor' requirements appear at least 7 times in BEFORE (#42, #44, #46, #47, #51, #54, #55) with identical sentence shape and more instances later in the document; the comment cites no condition ID, section, or distinguishing text, so no single block can be determined.\" searchGlobal(\"thermal monitor\") confirms before #42, #44, #46, #47, #51 with identical sentence shape.",
+      "note": "Comment is unanchorable: at least 7 identical-shaped thermal monitor requirements exist and the comment cites no condition ID or section to disambiguate. No unique target for a margin statement can be determined without human input.",
+      "confidence": "high",
+      "task": "T6",
+      "comment": "The thermal monitor requirement needs a margin statement."
+    },
+    {
+      "commentNumber": 54,
+      "verdict": "needs_user",
+      "evidence": "Anchor failed, method=\"failed\", note: \"Unresolvable: 'bus controller' requirements appear at before #41, #48, #58, #71, #72 and more instances later (e.g., near after #954); the word 'revision' occurs nowhere in either document, and the comment cites no condition ID or section — no unique block.\" searchGlobal(\"bus controller\") confirms before #41, #48, #58, #71, #72 with identical sentence shape.",
+      "note": "Comment is unanchorable: 5+ identical-shaped bus controller requirements and no occurrence of \"revision\" in either document; the comment names no condition ID or section. Requires human clarification of the intended requirement.",
+      "confidence": "high",
+      "task": "T6",
+      "comment": "The bus controller requirement should state its revision reference."
+    },
+    {
+      "commentNumber": 55,
+      "verdict": "needs_user",
+      "evidence": "Anchor failed, method=\"failed\", note: \"Unresolvable: 'clock tree' requirements appear at before #40, #43, #57, #59, #63 with identical phrasing; 'reference condition' text exists only in AFTER-doc REV2 additions (none for clock tree), and the comment cites no condition ID — no unique block.\" searchGlobal(\"clock tree\") confirms before #40, #43, #57, #59, #63; searchGlobal(\"reference condition\") shows REV2 additions only for memory scrubber L71, acquisition module L228, thermal monitor L481/L659, bus controller L900 — none for any clock tree block.",
+      "note": "Comment is unanchorable: 5 identical-shaped clock tree requirements, no reference condition was added to any of them, and the comment cites no condition ID. Needs human resolution of the intended target.",
+      "confidence": "high",
+      "task": "T6",
+      "comment": "The clock tree tolerance needs a reference condition."
+    },
+    {
+      "commentNumber": 56,
+      "verdict": "needs_user",
+      "evidence": "Anchor failed, method=\"failed\", note: \"Unresolvable: 'memory scrubber' requirements appear at before #52, #56, #62, #64, #68, #91, #92, #132, #133, #174, #182 and more; the comment's 'limit' concern matches no distinctive text ('limit' appears only in the heading '5 Environmental limits' at #1320), and no condition ID or section is cited — no unique block.\" searchGlobal(\"memory scrubber\") confirms before #52, #56, #62, #64, #68 with identical sentence shape.",
+      "note": "Comment is unanchorable: 5+ identical-shaped memory scrubber requirements; although one memory scrubber block received a REV2 reference-condition addition (after #111, condition L71), there is no basis to conclude the comment targeted that block. Requires human clarification.",
+      "confidence": "high",
+      "task": "T6",
+      "comment": "The memory scrubber requirement is unclear about its limit."
+    },
+    {
+      "commentNumber": 57,
+      "verdict": "needs_user",
+      "evidence": "Anchor failed, method=\"failed\", note: \"Unresolvable: content does not exist — 'unicorn', 'unicorn protocol', 'protocol', and 'flux table' all return zero matches in both documents; there is no appendix section at all ('appendix' also 0 matches).\" searchGlobal(\"unicorn\") returns 0 matches.",
+      "note": "The referenced \"unicorn protocol appendix\" and flux tables do not exist in either document, so no change could be applied or verified. Needs human confirmation of whether the comment refers to external/nonexistent content.",
+      "confidence": "high",
+      "task": "T6",
+      "comment": "The unicorn protocol appendix requires an update to the flux tables."
+    },
+    {
+      "commentNumber": 58,
+      "verdict": "needs_user",
+      "evidence": "Anchor failed, method=\"failed\", note: \"Unresolvable: content does not exist — 'warp', 'warp coil', and 'coil' return zero matches, and 'appendix' returns zero matches, so no Appendix Z exists in the BEFORE document.\" searchGlobal(\"warp coil\") returns 0 matches.",
+      "note": "No Appendix Z or warp coil tolerance exists in either document; nothing to correct or verify. Needs human confirmation of the comment's referent.",
+      "confidence": "high",
+      "task": "T6",
+      "comment": "Appendix Z mentions a warp coil tolerance that must be corrected."
+    },
+    {
+      "commentNumber": 59,
+      "verdict": "needs_user",
+      "evidence": "Anchor failed, method=\"failed\", note: \"Unresolvable: content does not exist — 'quantum telemetry', 'telemetry', 'latency', and 'budget' all return zero matches in both documents.\" searchGlobal(\"quantum telemetry\") returns 0 matches.",
+      "note": "No quantum telemetry section, latency, or budget text exists in either document, so no correction could be applied or verified. Needs human confirmation of the comment's referent.",
+      "confidence": "high",
+      "task": "T6",
+      "comment": "The quantum telemetry section states an impossible latency budget."
+    },
+    {
+      "commentNumber": 60,
+      "verdict": "needs_user",
+      "evidence": "Anchor failed, method=\"failed\", note: \"Unresolvable: content does not exist — 'dilithium', 'dilithium calibration', and 'calibration' all return zero matches in both documents; no such table or reference is present.\" searchGlobal(\"dilithium\") returns 0 matches.",
+      "note": "No dilithium calibration table or reference exists in either document, so there is nothing to remove or verify. Needs human confirmation of the comment's referent.",
+      "confidence": "high",
+      "task": "T6",
+      "comment": "Reference to the dilithium calibration table should be removed."
+    }
+  ],
+  "auto_checks": [],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Verify comments 1–10",
+      "status": "done",
+      "note": "T1 (comments 1–10) verified. Correctly applied: 1, 3, 5, 7, 9 — each target requirement received a \"REV2: reference condition is 25 °C (MKT-100x)\" addition at the correct block within the comment's section. Missing: 2, 4, 6, 8, 10 — target requirements (L112 #154, L322 #368, L532 #581, L742 #795, L952 #1009) are identical in before/after docs; no reference condition added despite processed=yes. A stray REV2 addition at after #1180 (L1122) does not correspond to any T1 comment."
+    },
+    {
+      "id": "T2",
+      "title": "Verify comments 11–20",
+      "status": "done",
+      "note": "T2 (comments 11–20) verified. 5 correctly_applied (11, 13, 15, 17, 19 — each had \"REV2: reference condition is 25 °C (MKT-1010/1012/1014/1016/1018)\" appended to the exact quoted requirement) and 5 missing (12, 14, 16, 18, 20 — requirement blocks byte-identical to before; no reference condition added anywhere, e.g. searchGlobal \"MKT-1011\" = 0 matches) despite register processed=yes and author replies claiming the addition."
+    },
+    {
+      "id": "T3",
+      "title": "Verify comments 21–30",
+      "status": "done",
+      "note": "T3 (comments 21–30) verified: 2 correctly_applied (21, 23 — REV2 reference condition added at #2194/#2421), 4 incorrectly_applied (25–28 — nominal cell edited to \"24 V (rev2)\", an undefined revision tag, not a stated reference condition), 4 missing (22, 24, 29, 30 — quoted requirement/table unchanged in after.docx despite processed=yes)."
+    },
+    {
+      "id": "T4",
+      "title": "Verify comments 31–40",
+      "status": "done",
+      "note": "T4 (comments 31–40) verified. 5 correctly_applied (33, 34, 37, 38, 39 — REV2 reference-condition additions at the exact cited requirements), 5 missing (31, 32 — section 11.1/11.2 tables unchanged; 35, 36, 40 — requirements L3577/L3682/L322 unchanged despite processed=yes). All verdicts based on direct before/after comparisons and unique condition-ID searches; confidence high throughout."
+    },
+    {
+      "id": "T5",
+      "title": "Verify comments 41–50",
+      "status": "done",
+      "note": "T5 (comments 41–50) verified. 6 correctly_applied (43–48: revision/reference-condition markers added at the exact quoted requirements; replies' markers MKT-1006/1008/1010/1012/1014/1016 match the diffs). 4 missing (41, 42, 49, 50: quoted requirements at blocks #581, #795, #1650, #1863 are byte-identical before/after; no tolerance-source/reference-condition text added). Note: comments 47/48 had mismatched registered anchors, but their verbatim-quoted requirements uniquely located the correctly applied changes."
+    },
+    {
+      "id": "T6",
+      "title": "Verify comments 51–60",
+      "status": "done",
+      "note": "T6 (comments 51–60) verified. 51: missing — the quoted L2002 requirement (#2077) is verbatim identical before/after and no reference condition was added to it (REV2 additions exist only for L71/L228/L481/L659/L900); no change at anchored block 42 either. 52–56: needs_user — anchors unresolvable (many identical-shaped requirement blocks, no condition ID/section cited; \"sampling\" 0 matches). 57–60: needs_user — referenced content (unicorn protocol/flux tables, Appendix Z warp coil, quantum telemetry latency, dilithium calibration) does not exist in either document."
+    }
+  ]
+}
