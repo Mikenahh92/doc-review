@@ -2,34 +2,27 @@
 // sessions (one pi session per task), guards, auto-resume failed tasks, deterministic
 // verdict rollup.
 //
-// DR-25: planning is no longer an agent job. Comments are chunked deterministically
-// into verify_comments tasks of ≤10 comments (document order), and — when a ruleset
-// was supplied at run start — validate_layout tasks are chunked deterministically
-// from the non-[auto] rules. Identical inputs ⇒ identical task list, every time.
+// DR-26: planning is deterministic code only — verify_comments tasks of ≤10 comments
+// in register order. No planner agent, no styling/layout validation (out of scope).
 
 import type { Store } from "./store.js";
 import type { Run, Task } from "./types.js";
-import { buildCompleterTools, buildVerifierTools, buildLayoutTools } from "./agent/tools.js";
+import { buildCompleterTools, buildVerifierTools } from "./agent/tools.js";
 import {
   COMPLETER_SYSTEM_PROMPT,
   completerUserPrompt,
   VERIFIER_SYSTEM_PROMPT,
   verifierUserPrompt,
-  LAYOUT_SYSTEM_PROMPT,
-  layoutUserPrompt,
 } from "./agent/prompts.js";
-import { agentRules } from "./ruleset.js";
 import { spawnAgent, type RuntimeConfig } from "./agent/runtime.js";
 import { renderReport, rollupVerdict } from "./report.js";
 
 const MAX_COMMENTS_PER_TASK = 10;
-const MAX_RULES_PER_TASK = 6;
 const MAX_RETRIES = 1;
 
 /**
- * Deterministic split (DR-25): verify tasks = consecutive chunks of ≤10 comments in
- * document (register) order; layout tasks = consecutive chunks of ≤6 non-auto rules
- * from the snapshotted ruleset. Task ids: T1..Tn (verify), L1..Ln (layout).
+ * Deterministic split: verify tasks = consecutive chunks of ≤10 comments in
+ * document (register) order. Task ids: T1..Tn.
  */
 export function planTasksDeterministic(run: Run): void {
   const tasks: Task[] = [];
@@ -38,29 +31,11 @@ export function planTasksDeterministic(run: Run): void {
     const nums = comments.slice(i, i + MAX_COMMENTS_PER_TASK).map((c) => c.number);
     tasks.push({
       taskId: `T${tasks.length + 1}`,
-      type: "verify_comments",
       title: `Verify comments ${nums[0]}–${nums[nums.length - 1]}`,
       commentNumbers: nums,
       status: "todo",
       results: [],
-      findings: [],
     });
-  }
-  if (run.ruleset) {
-    const rules = agentRules(run.ruleset);
-    for (let i = 0; i < rules.length; i += MAX_RULES_PER_TASK) {
-      const chunk = rules.slice(i, i + MAX_RULES_PER_TASK);
-      tasks.push({
-        taskId: `L${tasks.filter((t) => t.type === "validate_layout").length + 1}`,
-        type: "validate_layout",
-        title: `Validate layout rules ${chunk[0].id}–${chunk[chunk.length - 1].id}`,
-        commentNumbers: [],
-        ruleIds: chunk.map((r) => r.id),
-        status: "todo",
-        results: [],
-        findings: [],
-      });
-    }
   }
   run.tasks = tasks;
   run.status = "planned";
@@ -82,24 +57,8 @@ function commentsBlock(run: Run, task: Task): string {
     .join("\n");
 }
 
-/** Rules in a layout task's scope, rendered XML (full body = authoring guidance). */
-function rulesBlock(run: Run, task: Task): string {
-  return (task.ruleIds ?? [])
-    .map((id) => {
-      const r = run.ruleset?.rules.find((x) => x.id === id);
-      if (!r) return `<!-- rule ${id} missing from snapshot -->`;
-      return [
-        `<rule id="${r.id}">`,
-        `  <statement>${r.statement}</statement>`,
-        `  <guidance>${r.body.replace(/\s+/g, " ").trim().slice(0, 1200)}</guidance>`,
-        `</rule>`,
-      ].join("\n");
-    })
-    .join("\n");
-}
-
 export interface RunEvents {
-  onSplit?: (verifyTasks: number, layoutTasks: number) => void;
+  onSplit?: (verifyTasks: number) => void;
   onTaskStart?: (taskId: string) => void;
   onTaskDone?: (taskId: string, toolCalls: number) => void;
   onTaskRetry?: (taskId: string, reason: string) => void;
@@ -121,10 +80,7 @@ export async function executeRun(
   if (run.tasks.length === 0) {
     planTasksDeterministic(run);
     store.save(run);
-    events.onSplit?.(
-      run.tasks.filter((t) => t.type === "verify_comments").length,
-      run.tasks.filter((t) => t.type === "validate_layout").length
-    );
+    events.onSplit?.(run.tasks.length);
   }
 
   // ---- TASK parts (parallel worker pool — one FRESH session per task) ----
@@ -142,23 +98,14 @@ export async function executeRun(
           task.status = "in_progress";
           store.save(run);
           events.onTaskStart?.(task.taskId);
-          const isLayout = task.type === "validate_layout";
-          const tools = isLayout
-            ? buildLayoutTools({ store, run, task })
-            : buildVerifierTools({ store, run, task });
-          const userPrompt = isLayout
-            ? layoutUserPrompt({
-                runSummary: `${run.summary.docSummaryAfter} · ${run.summary.hunkCount} diff hunks vs before-review`,
-                taskTitle: `${task.title} (${task.taskId})`,
-                rulesBlock: rulesBlock(run, task),
-              })
-            : verifierUserPrompt({
-                runSummary: `${run.summary.docSummaryBefore} → ${run.summary.docSummaryAfter}; ${run.summary.hunkCount} diff hunks`,
-                taskTitle: `${task.title} (${task.taskId})`,
-                commentsBlock: commentsBlock(run, task),
-              });
+          const tools = buildVerifierTools({ store, run, task });
+          const userPrompt = verifierUserPrompt({
+            runSummary: `${run.summary.docSummaryBefore} → ${run.summary.docSummaryAfter}; ${run.summary.hunkCount} diff hunks`,
+            taskTitle: `${task.title} (${task.taskId})`,
+            commentsBlock: commentsBlock(run, task),
+          });
           const outcome = await spawnAgent({
-            systemPrompt: isLayout ? LAYOUT_SYSTEM_PROMPT : VERIFIER_SYSTEM_PROMPT,
+            systemPrompt: VERIFIER_SYSTEM_PROMPT,
             userPrompt,
             tools,
             config,
@@ -197,12 +144,9 @@ export async function executeRun(
   const verdictLines = run.tasks.flatMap((t) =>
     t.results.map((r) => `#${r.commentNumber} ${r.verdict}${r.confidence ? ` (${r.confidence})` : ""}`)
   );
-  const findingLines = run.tasks.flatMap((t) =>
-    t.findings.map((f) => `${f.ruleId} ${f.severity}${f.location ? ` @ ${f.location}` : ""}`)
-  );
   const completionOutcome = await spawnAgent({
     systemPrompt: COMPLETER_SYSTEM_PROMPT,
-    userPrompt: completerUserPrompt({ verdictsBlock: [...verdictLines, ...findingLines].join("\n") }),
+    userPrompt: completerUserPrompt({ verdictsBlock: verdictLines.join("\n") }),
     tools: completerTools,
     config,
     onToolCall: (name, args) => store.logToolCall(run.runId, "DONE", { tool: name, args }),

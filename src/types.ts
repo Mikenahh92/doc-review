@@ -81,33 +81,12 @@ export interface Finding {
   confidence: "high" | "medium" | "low";
 }
 
-export type TaskType = "verify_comments" | "validate_layout";
-
-/** One styling rule parsed from a ruleset markdown file (`## ID: statement`). */
-export interface Rule {
-  id: string;           // e.g. "TBL-3"
-  statement: string;    // rule statement from the heading
-  body: string;         // explanation / examples / edge cases below the heading
-  auto: boolean;        // [auto] = deterministic pre-pass rule; not re-judged by the layout agent
-}
-
-/** A parsed ruleset, snapshotted verbatim into the run at start. */
-export interface Ruleset {
-  name: string;
-  version: string;
-  sourceMarkdown: string; // verbatim snapshot — audit trail, reproducibility
-  rules: Rule[];
-}
-
 export interface Task {
   taskId: string;
-  type: TaskType;
   title: string;
   commentNumbers: number[];
-  ruleIds?: string[];
   status: "todo" | "in_progress" | "done" | "blocked";
   results: TaskResult[];
-  findings: Finding[];
   note?: string;
 }
 
@@ -130,9 +109,8 @@ export interface Run {
   diff: DiffHunk[];
   comments: CommentRecord[];
   anchors: CommentAnchor[];
-  ruleset: Ruleset | null;   // snapshot of the ruleset selected at run start (null = none supplied)
   summary: RunSummary;
-  autoChecks: Finding[];     // [auto] rule results (DOC-*) — deterministic
+  autoChecks: Finding[];     // deterministic document checks (DOC-*)
   tasks: Task[];
   verdict: string | null;    // deterministic rollup, set at completion
   completionSummary?: string; // written by the completion agent (1 session, after all tasks)

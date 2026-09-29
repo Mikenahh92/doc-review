@@ -8,19 +8,15 @@ import type { Run, Verdict } from "./types.js";
 
 export function rollupVerdict(run: Run): string {
   const total = run.tasks.reduce((n, t) => n + t.results.length, 0);
-  const layoutFindings = run.tasks.flatMap((t) => (t.type === "validate_layout" ? t.findings : []));
-  if (total === 0 && layoutFindings.length === 0)
-    return run.comments.length ? "needs_user_review" : "approved"; // no verdicts collected — never silently approve
+  if (total === 0) return run.comments.length ? "needs_user_review" : "approved"; // no verdicts collected — never silently approve
   const bad = run.tasks
     .flatMap((t) => t.results)
     .some((r) => r.verdict === "missing" || r.verdict === "incorrectly_applied");
   const violation =
-    run.autoChecks.some((f) => f.severity === "violation") ||
-    layoutFindings.some((f) => f.severity === "violation"); // DR-25: layout violations block approval; warnings do not
+    run.autoChecks.some((f) => f.severity === "violation");
   if (bad || violation) return "needs_changes";
   const needsUser =
-    run.tasks.some((t) => t.results.some((r) => r.verdict === "needs_user")) ||
-    layoutFindings.some((f) => f.severity === "warning" && f.confidence === "low");
+    run.tasks.some((t) => t.results.some((r) => r.verdict === "needs_user"));
   if (needsUser) return "needs_user_review";
   return "approved";
 }
@@ -45,17 +41,11 @@ export function reportJson(run: Run): object {
       after: run.summary.docSummaryAfter,
       diff_hunks: run.summary.hunkCount,
       comments: { total: run.comments.length, anchored: run.summary.anchoredCount, verdicts: counts },
-      ruleset: run.ruleset
-        ? { name: run.ruleset.name, version: run.ruleset.version, rules: run.ruleset.rules.length, agentJudged: run.ruleset.rules.filter((r) => !r.auto).length }
-        : null,
     },
     verdict: rollupVerdict(run),
     comment_verdicts: results,
-    layout_findings: run.tasks.flatMap((t) =>
-      t.type === "validate_layout" ? t.findings.map((f) => ({ ...f, task: t.taskId })) : []
-    ),
     auto_checks: run.autoChecks,
-    tasks: run.tasks.map((t) => ({ id: t.taskId, type: t.type, title: t.title, status: t.status, note: t.note })),
+    tasks: run.tasks.map((t) => ({ id: t.taskId, title: t.title, status: t.status, note: t.note })),
   };
 }
 
@@ -64,22 +54,12 @@ const esc = (s: string) =>
 
 export function reportHtml(run: Run): string {
   const results = run.tasks.flatMap((t) => t.results.map((r) => ({ ...r, task: t.taskId })));
-  const layoutFindings = run.tasks.flatMap((t) =>
-    t.type === "validate_layout" ? t.findings.map((f) => ({ ...f, task: t.taskId })) : []
-  );
   const cls = (v: Verdict) =>
     v === "correctly_applied" ? "ok" : v === "needs_user" ? "user" : "bad";
   const rows = results
     .map(
       (r) => `<tr><td>#${r.commentNumber}</td><td><span class="pill ${cls(r.verdict)}">${r.verdict}</span></td>` +
         `<td>${esc(r.evidence).slice(0, 300)}</td><td>${r.confidence}</td></tr>`
-    )
-    .join("\n");
-  const fcls = (s: string) => (s === "pass" ? "ok" : s === "warning" ? "user" : "bad");
-  const frows = layoutFindings
-    .map(
-      (f) => `<tr><td>${esc(f.ruleId)}</td><td><span class="pill ${fcls(f.severity)}">${f.severity}</span></td>` +
-        `<td>${esc(f.location ?? "")}</td><td>${esc(f.evidence).slice(0, 300)}</td><td>${esc(f.verdictReason).slice(0, 200)}</td></tr>`
     )
     .join("\n");
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>ReWork check ${run.runId}</title>
@@ -100,7 +80,6 @@ td,th{border-bottom:1px solid #eef;padding:6px;text-align:left}
 <table><tr><th>Comment</th><th>Verdict</th><th>Evidence</th><th>Confidence</th></tr>
 ${rows}
 </table>
-${layoutFindings.length ? `<h3>Layout findings${run.ruleset ? ` — ruleset: ${esc(run.ruleset.name)} (${esc(run.ruleset.version)})` : ""}</h3><table><tr><th>Rule</th><th>Severity</th><th>Location</th><th>Evidence</th><th>Verdict reason</th></tr>${frows}</table>` : ""}
 ${run.autoChecks.length ? `<h3>[auto] document checks</h3><ul>${run.autoChecks.map((f) => `<li><b>${f.ruleId}</b> (${f.severity}): ${esc(f.evidence)}</li>`).join("")}</ul>` : ""}
 <p class="meta">Verdict computed deterministically from findings — never by the agent. Audit trail: runs/*.jsonl</p>
 </body></html>`;

@@ -105,11 +105,6 @@ app.post("/api/runs", async (req, res) => {
     const beforePath = dec(b.before, "before.docx");
     const afterPath = dec(b.after, "after.docx");
     const registerPath = dec(b.register, "comments.xlsx");
-    // DR-25: optional ruleset (markdown) — parsed + snapshotted at run start.
-    // Supplied but malformed ⇒ the run is refused (buildRun throws).
-    const rulesetMarkdown = b.ruleset?.contentB64
-      ? Buffer.from(b.ruleset.contentB64, "base64").toString("utf8")
-      : undefined;
     const { run, warnings } = await buildRun(
       fs.readFileSync(beforePath),
       fs.readFileSync(afterPath),
@@ -118,19 +113,14 @@ app.post("/api/runs", async (req, res) => {
         before: path.basename(beforePath),
         after: path.basename(afterPath),
         register: path.basename(registerPath),
-      },
-      rulesetMarkdown
+      }
     );
     store.save(run);
     // DR-24: faux mode gets a deterministic demo oracle so a fresh container runs end-to-end without a model server
     const cfg = effectiveConfig();
     const demoEvents = cfg.mode === "faux" ? installDemoOracle(store, run.runId, cfg) : undefined;
     executeRun(store, run, cfg, demoEvents); // fire and forget; poll via GET
-  res.json({
-    runId: run.runId,
-    warnings,
-    ruleset: run.ruleset ? { name: run.ruleset.name, version: run.ruleset.version, rules: run.ruleset.rules.length } : null,
-  });
+  res.json({ runId: run.runId, warnings });
   } catch (e: any) {
     res.status(400).json({ error: e.message });
   }
@@ -158,20 +148,15 @@ app.get("/api/runs/:id", (req, res) => {
     status: run.status,
     verdict: run.verdict ?? rollupVerdictSafe(run),
     summary: run.summary,
-    ruleset: run.ruleset
-      ? { name: run.ruleset.name, version: run.ruleset.version, rules: run.ruleset.rules.map((r) => ({ id: r.id, auto: r.auto })) }
-      : null,
     commentCount: run.comments.length,
     autoChecks: run.autoChecks,
     completionSummary: run.completionSummary ?? null,
     tasks: run.tasks.map((t) => ({
       id: t.taskId,
-      type: t.type,
       title: t.title,
       status: t.status,
       scope: t.commentNumbers,
       results: t.results,
-      findings: t.findings,
       note: t.note ?? null,
     })),
   });
