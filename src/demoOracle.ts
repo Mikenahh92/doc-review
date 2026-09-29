@@ -14,11 +14,28 @@ export function installDemoOracle(store: Store, runId: string, config: RuntimeCo
   const faux = fauxHandle(config);
   if (!faux) return undefined;
   const fresh = () => store.get(runId) as Run;
-  const st = { phase: "tasks" as "tasks" | "done", taskId: "" };
+  const st = { phase: "tasks" as "anchor" | "tasks" | "done", taskId: "" };
 
   const oracle = (context: any) => {
     const run = fresh();
     const toolResults = (context.messages ?? []).filter((m: any) => m.role === "toolResult");
+
+    // ---- anchor resolver: pickAnchor for each pending comment, then guarded close ----
+    if (st.phase === "anchor") {
+      const pending = run.anchors.filter((a) => a.anchorIndex === null && !a.note);
+      if (pending.length) {
+        const pin = run.before.blocks.find((b) => b.type === "table" && b.text.includes("Pin"));
+        return fauxAssistantMessage(
+          [fauxToolCall("pickAnchor", {
+            commentNumber: pending[0].commentNumber,
+            blockIndex: pin ? pin.index : 0,
+            evidence: "demo oracle: anchored at the wiring pin table (faux judgment)",
+          })],
+          { stopReason: "toolUse" }
+        );
+      }
+      return fauxAssistantMessage([fauxToolCall("completeAnchoring", {})], { stopReason: "toolUse" });
+    }
 
     // ---- completion: summary then guarded close ----
     if (st.phase === "done") {
@@ -85,6 +102,7 @@ export function installDemoOracle(store: Store, runId: string, config: RuntimeCo
 
   faux.setResponses(Array.from({ length: 200 }, () => oracle));
   return {
+    onAnchorStart: () => { st.phase = "anchor"; },
     onTaskStart: (taskId) => { st.phase = "tasks"; st.taskId = taskId; },
     onCompleteStart: () => { st.phase = "done"; },
   };

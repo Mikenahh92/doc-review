@@ -5,7 +5,8 @@ import { parseMarkdown } from "./markdown.js";
 import { parsePdf } from "./pdf.js";
 import { assertExportScope, parseRegister } from "./register.js";
 import { diffDocs } from "./diff.js";
-import { anchorComments } from "./anchor.js";
+import { anchorComments, anchorMethodCounts } from "./anchor.js";
+import { buildHeadingMap, parseToc } from "./headings.js";
 import type { CommentRecord, Finding, ParsedDoc, Run, RunSummary } from "../types.js";
 import { randomUUID } from "node:crypto";
 
@@ -55,7 +56,18 @@ export async function buildRun(
   const comments = parseRegister(registerBuffer);
   const warnings = assertExportScope(comments);
   const diff = diffDocs(before, after);
-  const anchors = anchorComments(comments, before);
+  // DR-27: heading map + TOC give section-number anchoring ("6.2") — page never needed
+  const headingMap = buildHeadingMap(before);
+  const toc = parseToc(before);
+  const tocGhosts = toc.entries.filter((e) => !headingMap.has(e.number));
+  if (toc.entries.length && tocGhosts.length) {
+    warnings.push(
+      `TOC lists ${tocGhosts.length} section(s) not found as numbered headings ` +
+      `(e.g. ${tocGhosts[0].number}) — headings may have lost their numbering or styles; ` +
+      `comments targeting those sections will fall back to content/LLM anchoring.`
+    );
+  }
+  const anchors = anchorComments(comments, before, diff);
 
   const summary: RunSummary = {
     docSummaryBefore: docSummary(before),
@@ -65,6 +77,7 @@ export async function buildRun(
     hunkCount: diff.length,
     commentCount: comments.length,
     anchoredCount: anchors.filter((a) => a.anchorIndex !== null).length,
+    anchorMethods: anchorMethodCounts(anchors),
   };
 
   const run: Run = {
@@ -76,6 +89,7 @@ export async function buildRun(
     diff,
     comments,
     anchors,
+    headingMap: Object.fromEntries(headingMap),
     summary,
     autoChecks: autoDocChecks(before, after),
     tasks: [],

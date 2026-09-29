@@ -1,9 +1,21 @@
-// Comment anchoring: resolve each register row to a block index in the BEFORE document.
-// Primary: location type + location number (ordinal of that element type).
-// Fallback: content match (comment text / reply snippet against document text).
-// Unanchorable -> method "failed", anchorIndex null (agent must return needs_user — never guess).
+// Comment anchoring (DR-27): resolve each register row to a block index in the
+// BEFORE document via a deterministic cascade. LLM fallback lives in the
+// orchestrator (one bounded resolver session) — this module never calls a model.
+//
+// Cascade:
+//   Tier 1a  section number in the heading map ("6.2") → heading block; tables
+//            inside the section resolve to the first table block
+//   Tier 1b  plain integer location number on docs WITHOUT numbered headings
+//            → ordinal among blocks of that location type (legacy behaviour)
+//   Tier 2a  content match: distinctive fragments of comment/reply against
+//            before-doc text (skipping the TOC region)
+//   Tier 2b  diff match: distinctive tokens shared with a diff hunk's afterText
+//            (the applied change often contains the reviewer's wording)
+//   Tier 4   unresolved → anchorIndex null, method "failed" (LLM resolver runs
+//            later; survivors become needs_user — never guess)
 
-import type { CommentAnchor, CommentRecord, ParsedDoc } from "../types.js";
+import type { CommentAnchor, CommentRecord, DiffHunk, ParsedDoc } from "../types.js";
+import { buildHeadingMap, parseToc, sectionRange } from "./headings.js";
 
 function typeMatch(locationType: string, blockType: string): boolean {
   const lt = locationType.toLowerCase();
@@ -12,29 +24,107 @@ function typeMatch(locationType: string, blockType: string): boolean {
   return lt === "paragraph" || lt === "line" || lt === "requirement";
 }
 
+/** Distinctive tokens (≥4 chars) of comment + author reply, minus stopwords. */
+const STOP = new Set([
+  "this", "that", "with", "from", "shall", "must", "have", "been", "here", "there",
+  "into", "your", "them", "then", "than", "when", "what", "which", "where", "added",
+  "please", "value", "text", "some", "also", "only", "needs", "need", "make", "made",
+  "document", "sentence", "version", "setting", "section",
+]);
+function distinctive(c: CommentRecord): string[] {
+  const words = `${c.comment} ${c.replyByAuthor}`
+    .toLowerCase()
+    .split(/[^a-z0-9.]+/)
+    .filter((w) => w.length >= 4 && !STOP.has(w));
+  return [...new Set(words)];
+}
+
 export function anchorComments(
   comments: CommentRecord[],
-  before: ParsedDoc
+  before: ParsedDoc,
+  diff: DiffHunk[]
 ): CommentAnchor[] {
+  const headingMap = buildHeadingMap(before);
+  const { bodyStart } = parseToc(before);
+
   return comments.map((c) => {
-    // 1) location type + ordinal
-    const of = before.blocks.filter((b) => typeMatch(c.locationType, b.type));
-    const idx = c.locationNumber - 1;
-    if (of.length > 0 && idx >= 0 && idx < of.length) {
-      return { commentNumber: c.number, anchorIndex: of[idx].index, method: "location" };
+    const sec = (c.locationNumber ?? "").trim();
+
+    // ---- Tier 1a: section-number anchor (page never needed) ----
+    if (sec && headingMap.has(sec)) {
+      const h = headingMap.get(sec)!;
+      const { start, end } = sectionRange(before, h);
+      const lt = c.locationType.toLowerCase();
+      if (lt === "table" || lt === "area") {
+        const tbl = before.blocks.find(
+          (b) => b.index >= start && b.index <= end && b.type === "table"
+        );
+        const target = tbl ?? before.blocks[h];
+        return {
+          commentNumber: c.number,
+          anchorIndex: target.index,
+          sectionEnd: tbl ? target.index : end, // table → exact block; else whole section window
+          method: "section",
+        };
+      }
+      // paragraph / empty / line / requirement → section heading, window = whole section
+      return { commentNumber: c.number, anchorIndex: h, sectionEnd: end, method: "section" };
     }
-    // 2) content fallback: try distinctive fragments of the comment/reply against doc text
+
+    // ---- Tier 1b: integer ordinal among that location type (docs without numbered headings) ----
+    if (sec && /^\d+$/.test(sec)) {
+      const of = before.blocks.filter(
+        (b) => b.index >= bodyStart && typeMatch(c.locationType, b.type)
+      );
+      const idx = parseInt(sec, 10) - 1;
+      if (idx >= 0 && idx < of.length) {
+        return { commentNumber: c.number, anchorIndex: of[idx].index, method: "section" };
+      }
+    }
+
+    // ---- Tier 2a: content match against before-doc (outside the TOC region) ----
     const fragments = [c.replyByAuthor, c.comment]
       .flatMap((s) => s.split(/[.;:]\s+/))
       .map((s) => s.trim())
       .filter((s) => s.length >= 15)
       .sort((a, b) => b.length - a.length);
     for (const frag of fragments) {
-      const hit = before.blocks.find((b) =>
-        b.text.toLowerCase().includes(frag.slice(0, 40).toLowerCase())
+      const hit = before.blocks.find(
+        (b) => b.index >= bodyStart &&
+          b.text.toLowerCase().includes(frag.slice(0, 40).toLowerCase())
       );
       if (hit) return { commentNumber: c.number, anchorIndex: hit.index, method: "content" };
     }
+
+    // ---- Tier 2b: distinctive tokens shared with a diff hunk's afterText ----
+    const tokens = distinctive(c);
+    if (tokens.length) {
+      const scored = diff
+        .map((h) => {
+          const at = (h.afterText ?? "").toLowerCase();
+          const shared = tokens.filter((t) => at.includes(t));
+          // a shared token with a digit (IP67, 250) is strong; words need two
+          const strong = shared.some((t) => /\d/.test(t));
+          return { h, score: strong || shared.length >= 2 ? shared.length : 0 };
+        })
+        .filter((x) => x.score > 0)
+        .sort((a, b) => b.score - a.score);
+      const best = scored[0];
+      if (best) {
+        const idx = best.h.beforeIndex ?? best.h.afterIndex;
+        if (idx !== undefined)
+          return { commentNumber: c.number, anchorIndex: idx, method: "content", note: "diff-match" };
+      }
+    }
+
+    // ---- Tier 4: unanchorable → LLM resolver (orchestrator), then needs_user ----
     return { commentNumber: c.number, anchorIndex: null, method: "failed" };
   });
+}
+
+/** Recompute the method distribution for the run summary. */
+export function anchorMethodCounts(anchors: CommentAnchor[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const a of anchors) counts[a.method] = (counts[a.method] ?? 0) + 1;
+  return counts;
 }

@@ -48,46 +48,69 @@ function makeDocx(blocks: string[]): Buffer {
 }
 
 // ---- before-review document ----
+// DR-27 fixture: numbered headings + TOC; register rows use SECTION numbers with page 0.
 const before = [
   para("System Specification", "Heading1"),
-  para("Introduction"),
+  para("Contents", "Heading1"),
+  para("1 Introduction . 1"),
+  para("6 Sensor calibration . 2"),
+  para("6.2 Measurement accuracy . 2"),
+  para("6.3 Reporting interval . 2"),
+  para("7 Maintenance . 3"),
+  para("7.1 Firmware . 3"),
+  para("1 Introduction", "Heading2"),
   para("This document specifies the requirements for the sensor unit and its interfaces. The tolerance values in this section are normative."),
-  para("The enclosure shall be sealed against water ingress."),                                    // idx ~4 → comment 1 (rephrased in after)
+  para("The enclosure shall be sealed against water ingress."),                              // c1 (section 1)
   para("Operating temperature range is -20 to +60 degrees Celsius."),
-  para("Sensor calibration"),
+  para("6 Sensor calibration", "Heading2"),
+  para("The calibration parameters are listed below."),
+  para("6.2 Measurement accuracy", "Heading3"),
   table([
     ["Parameter", "Value"],
     ["Range", "0-100"],
-    ["Accuracy", "±5 %"],                                    // → comment 3 (table fix in after)
+    ["Accuracy", "±5 %"],                                     // c3 (table in 6.2)
   ]),
-  para("The sensor shall report measurements every 100 milliseconds."),                             // → comment 2 (NOT changed in after → missing)
-  para("Maintenance"),
+  para("6.3 Reporting interval", "Heading3"),
+  para("The sensor shall report measurements every 100 milliseconds."),                     // c2 (NOT changed → missing)
+  para("7 Maintenance", "Heading2"),
   para("The unit must be serviced annually by qualified personnel."),
-  para("Deprecated: firmware version 1.x is no longer supported and should be avoided."),           // idx ~11 → comment 4 (reworded in after)
+  para("7.1 Firmware", "Heading3"),
+  para("Deprecated: firmware version 1.x is no longer supported and should be avoided."),   // c4 (section 7.1)
   para("Appendix A: wiring diagram"),
-  table([["Pin", "Signal"], ["1", "VCC"], ["2", "GND"], ["3", "DATA"]]),
+  table([["Pin", "Signal"], ["1", "VCC"], ["2", "GND"], ["3", "DATA"]]),                   // c5 target (LLM anchor)
   para("End of document."),
 ];
 
-// ---- after-review document (humans applied comments 1, 3, 4; forgot 2) ----
+// ---- after-review document (humans applied comments 1, 3, 4; forgot 2; 5 has no edit) ----
 const after = [
   para("System Specification", "Heading1"),
-  para("Introduction"),
+  para("Contents", "Heading1"),
+  para("1 Introduction . 1"),
+  para("6 Sensor calibration . 2"),
+  para("6.2 Measurement accuracy . 2"),
+  para("6.3 Reporting interval . 2"),
+  para("7 Maintenance . 3"),
+  para("7.1 Firmware . 3"),
+  para("1 Introduction", "Heading2"),
   para("This document specifies the requirements for the sensor unit and its interfaces. The tolerance values in this section are normative."),
-  para("The enclosure shall be sealed against water ingress and dust according to IP67."),          // comment 1 applied
+  para("The enclosure shall be sealed against water ingress and dust according to IP67."),   // c1 applied
   para("Operating temperature range is -20 to +60 degrees Celsius."),
-  para("Sensor calibration"),
+  para("6 Sensor calibration", "Heading2"),
+  para("The calibration parameters are listed below."),
+  para("6.2 Measurement accuracy", "Heading3"),
   table([
     ["Parameter", "Value"],
     ["Range", "0-100"],
-    ["Accuracy", "±5 % (full scale)"],                                   // comment 3 applied
+    ["Accuracy", "±5 % (full scale)"],                                  // c3 applied
   ]),
-  para("The sensor shall report measurements every 100 milliseconds."),                             // comment 2 NOT applied
-  para("Maintenance"),
+  para("6.3 Reporting interval", "Heading3"),
+  para("The sensor shall report measurements every 100 milliseconds."),                     // c2 NOT applied
+  para("7 Maintenance", "Heading2"),
   para("The unit must be serviced annually by qualified personnel."),
-  para("Firmware version 2.x or later is required for this product."),                              // comment 4 applied
+  para("7.1 Firmware", "Heading3"),
+  para("Firmware version 2.x or later is required for this product."),                      // c4 applied
   para("Appendix A: wiring diagram"),
-  table([["Pin", "Signal"], ["1", "VCC"], ["2", "GND"], ["3", "DATA"]]),
+  table([["Pin", "Signal"], ["1", "VCC"], ["2", "GND"], ["3", "DATA"]]),                   // unchanged (c5 → missing)
   para("End of document."),
 ];
 
@@ -95,14 +118,16 @@ fs.writeFileSync(path.join(OUT, "before.docx"), makeDocx(before));
 fs.writeFileSync(path.join(OUT, "after.docx"), makeDocx(after));
 
 // ---- comments register (structured XLSX, pre-filtered: accepted + processed=yes) ----
-// NOTE: location ordinals count element types in parse order among *paragraph-ish* blocks.
+// DR-27: location numbers are SECTION numbers ("6.2") as in the TOC/headings;
+// every row has page 0 (page not enforced in the review tool) — anchoring must
+// work without it. Comment 5 has NO location data at all → LLM resolver tier.
 const rows = [
   {
     Number: 1,
     document: "System Specification",
-    "page number": 1,
+    "page number": 0,
     location: "Paragraph",
-    "location number": 3,
+    "location number": "1",
     comment: "Please specify the degree of protection of the enclosure (IP rating).",
     "comment type": "Author",
     "reply by author": "Added IP67 rating to the sentence.",
@@ -115,9 +140,9 @@ const rows = [
   {
     Number: 2,
     document: "System Specification",
-    "page number": 1,
+    "page number": 0,
     location: "Paragraph",
-    "location number": 6,
+    "location number": "6.3",
     comment: "Clarify whether the 100 ms reporting interval includes transmission time.",
     "comment type": "Meeting",
     "reply by author": "Clarified reporting interval definition.",
@@ -130,9 +155,9 @@ const rows = [
   {
     Number: 3,
     document: "System Specification",
-    "page number": 1,
+    "page number": 0,
     location: "Table",
-    "location number": 1,
+    "location number": "6.2",
     comment: "The accuracy value needs a reference (percentage of what?).",
     "comment type": "Author",
     "reply by author": "Added '(full scale)' to the accuracy value.",
@@ -145,12 +170,27 @@ const rows = [
   {
     Number: 4,
     document: "System Specification",
-    "page number": 2,
+    "page number": 0,
     location: "Paragraph",
-    "location number": 9,
+    "location number": "7.1",
     comment: "Update the deprecated firmware reference to the current supported version.",
     "comment type": "Meeting",
     "reply by author": "Replaced with firmware 2.x requirement.",
+    "external reply": "",
+    "external participant": "",
+    participant: "P. Smit",
+    status: "accepted",
+    processed: "yes",
+  },
+  {
+    Number: 5,
+    document: "System Specification",
+    "page number": 0,
+    location: "",
+    "location number": "",
+    comment: "The baud rate setting must be documented somewhere appropriate.",
+    "comment type": "Meeting",
+    "reply by author": "Documented in the wiring appendix.",
     "external reply": "",
     "external participant": "",
     participant: "P. Smit",

@@ -4,6 +4,7 @@
 import { Type, type Static } from "@sinclair/typebox";
 import type { AgentTool } from "@earendil-works/pi-agent-core";
 import type { Store } from "../store.js";
+import { anchorMethodCounts } from "../prepass/anchor.js";
 import type { Run, Task, TaskResult, Verdict } from "../types.js";
 import { GuardError, VERDICTS } from "../types.js";
 
@@ -300,3 +301,74 @@ export function buildVerifierTools(ctx: Ctx): AgentTool<any>[] {
   ];
 }
 
+
+// ---- Anchor resolver tools (DR-27) ----
+// One bounded session BEFORE the task split, for comments the deterministic
+// cascade could not anchor. pickAnchor validates and persists; completeAnchoring
+// is guarded. Anchor provenance rides into the run (method "llm").
+
+function pickAnchor(ctx: Ctx): AgentTool<any> {
+  return {
+    name: "pickAnchor",
+    label: "Anchor a comment",
+    description: "Record which block of the BEFORE document an unresolved comment refers to (or mark it unresolvable).",
+    parameters: Type.Object({
+      commentNumber: Type.Integer({ description: "Comment number from the register" }),
+      blockIndex: Type.Optional(Type.Integer({ minimum: 0, description: "Block index in the before document" })),
+      unresolvable: Type.Optional(Type.Boolean({ description: "True when the location cannot be determined — the comment becomes needs_user" })),
+      evidence: Type.String({ description: "The matching text (or why it is unresolvable)" }),
+    }),
+    execute: async (_id, p: any) => {
+      const run = getRun(ctx);
+      const anchor = run.anchors.find((a) => a.commentNumber === p.commentNumber);
+      if (!anchor) throw new GuardError(`comment #${p.commentNumber} has no anchor record`);
+      if (anchor.anchorIndex !== null || anchor.note) {
+        return { content: text({ ok: false, error: `comment #${p.commentNumber} is already resolved (${anchor.method})` }), details: {} };
+      }
+      if (p.unresolvable) {
+        anchor.method = "failed";
+        anchor.note = `llm-unresolvable: ${p.evidence}`;
+        run.summary.anchoredCount = run.anchors.filter((a) => a.anchorIndex !== null).length;
+        run.summary.anchorMethods = anchorMethodCounts(run.anchors);
+        ctx.store.save(run);
+        ctx.store.logToolCall(run.runId, "ANCHOR", { tool: "pickAnchor", comment: p.commentNumber, unresolvable: p.evidence });
+        return { content: text({ ok: true, comment: p.commentNumber, resolved: "unresolvable" }), details: {} };
+      }
+      const block = run.before.blocks.find((b) => b.index === p.blockIndex);
+      if (!block) {
+        return { content: text({ ok: false, error: `blockIndex ${p.blockIndex} out of range (0..${run.before.blocks.length - 1})` }), details: {} };
+      }
+      anchor.anchorIndex = block.index;
+      anchor.method = "llm";
+      anchor.note = p.evidence;
+      run.summary.anchoredCount = run.anchors.filter((a) => a.anchorIndex !== null).length;
+      run.summary.anchorMethods = anchorMethodCounts(run.anchors);
+      ctx.store.save(run);
+      ctx.store.logToolCall(run.runId, "ANCHOR", { tool: "pickAnchor", comment: p.commentNumber, block: block.index, evidence: p.evidence });
+      return { content: text({ ok: true, comment: p.commentNumber, anchoredAt: block.index }), details: {} };
+    },
+  };
+}
+
+function completeAnchoring(ctx: Ctx): AgentTool<any> {
+  return {
+    name: "completeAnchoring",
+    label: "Complete anchoring (guarded)",
+    description: "End the resolver session. REJECTED while unresolved comments remain.",
+    parameters: Type.Object({}),
+    execute: async () => {
+      const run = getRun(ctx);
+      const pending = run.anchors.filter((a) => a.anchorIndex === null && !a.note);
+      if (pending.length > 0) {
+        const msg = `Guard: ${pending.length} comment(s) still unresolved: ${pending.map((a) => `#${a.commentNumber}`).join(", ")}. Call pickAnchor (or unresolvable) for each.`;
+        ctx.store.logToolCall(run.runId, "ANCHOR", { tool: "completeAnchoring", rejected: msg });
+        return { content: text({ ok: false, error: msg }), details: {} };
+      }
+      return { content: text({ ok: true }), details: {}, terminate: true };
+    },
+  };
+}
+
+export function buildAnchorTools(ctx: Ctx): AgentTool<any>[] {
+  return [searchGlobal(ctx), pickAnchor(ctx), completeAnchoring(ctx)];
+}

@@ -21,7 +21,7 @@ export interface CommentRecord {
   documentTitle: string;
   page: number;              // may be 0 by mistake
   locationType: string;      // Line | Requirement | Figure | Table | Paragraph | Area
-  locationNumber: number;    // ordinal of that element type
+  locationNumber: string;    // section number ("6.2") or ordinal ("3"), sometimes empty
   comment: string;
   commentType: string;       // meeting | author
   replyByAuthor: string;
@@ -58,7 +58,9 @@ export interface DiffHunk {
 export interface CommentAnchor {
   commentNumber: number;
   anchorIndex: number | null; // block index in before-doc; null = unanchorable
-  method: "location" | "content" | "failed";
+  method: "section" | "content" | "llm" | "failed";
+  sectionEnd?: number;        // last block of the anchored section (evidence window)
+  note?: string;              // provenance for llm anchors / unresolvable marks
 }
 
 export interface TaskResult {
@@ -98,6 +100,7 @@ export interface RunSummary {
   hunkCount: number;
   commentCount: number;
   anchoredCount: number;
+  anchorMethods: Record<string, number>; // method -> count (data-quality signal per register)
 }
 
 export interface Run {
@@ -109,6 +112,7 @@ export interface Run {
   diff: DiffHunk[];
   comments: CommentRecord[];
   anchors: CommentAnchor[];
+  headingMap: Record<string, number>; // section number -> block index (built from headings/TOC)
   summary: RunSummary;
   autoChecks: Finding[];     // deterministic document checks (DOC-*)
   tasks: Task[];

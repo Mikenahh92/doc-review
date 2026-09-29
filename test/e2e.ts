@@ -1,8 +1,9 @@
 // End-to-end test — full loop WITHOUT a model server:
-//   fixtures → pre-pass → deterministic split (no planner, no layout validation —
-//   styling checks are out of scope, DR-26) → orchestrator → pi agent sessions
-//   (faux provider, scripted) → tools → guards → report.
-// The scripted "oracle" plays the model: it follows the verifier workflow.
+//   fixtures → pre-pass (heading map + TOC + anchor cascade) → LLM anchor resolver
+//   (only for comments with no location data) → deterministic split → orchestrator
+//   → pi agent sessions (faux provider, scripted) → tools → guards → report.
+// No planner, no layout validation (out of scope). The scripted "oracle" plays
+// the model: resolver + verifier + completer workflows.
 
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -37,9 +38,17 @@ async function main() {
   );
   const store = new Store(path.join(process.cwd(), "runs-test"));
   store.save(run);
-  console.log(`run ${run.runId}: ${run.summary.commentCount} comments, ${run.summary.hunkCount} hunks, ${run.summary.anchoredCount} anchored, ${warnings.length} warnings`);
+  console.log(`run ${run.runId}: ${run.summary.commentCount} comments, ${run.summary.hunkCount} hunks, ${run.summary.anchoredCount} anchored (pre-resolver), ${warnings.length} warnings`);
+  if (run.summary.commentCount !== 5) fail(`expected 5 comments, got ${run.summary.commentCount}`);
   if (run.summary.hunkCount !== 3) fail(`expected 3 diff hunks, got ${run.summary.hunkCount}`);
-  if (run.summary.anchoredCount !== 4) fail(`expected 4 anchored comments, got ${run.summary.anchoredCount}`);
+  if (run.summary.anchoredCount !== 4) fail(`expected 4 deterministic anchors (comment 5 unresolved), got ${run.summary.anchoredCount}`);
+  if (warnings.length !== 0) fail(`expected 0 warnings (complete TOC), got ${warnings.join(" | ")}`);
+  for (const key of ["1", "6", "6.2", "6.3", "7", "7.1"]) {
+    if (run.headingMap[key] === undefined) fail(`heading map missing section ${key}`);
+  }
+  if (run.summary.anchorMethods.section !== 4 || run.summary.anchorMethods.failed !== 1)
+    fail(`expected anchorMethods {section:4, failed:1}, got ${JSON.stringify(run.summary.anchorMethods)}`);
+  console.log(`✓ heading map: ${Object.keys(run.headingMap).join(", ")} · anchorMethods ${JSON.stringify(run.summary.anchorMethods)}`);
 
   // ---- guard unit test: premature completeTask rejected ----
   run.tasks.push({
@@ -59,7 +68,25 @@ async function main() {
   const faux = fauxHandle(config);
   if (!faux) fail("no faux handle");
   let currentTaskId = "";
+  let mode: "anchor" | "tasks" | "done" = "tasks";
   const oracle = (context: any) => {
+    // ---- ANCHOR RESOLVER session: pickAnchor per pending comment, then guarded close ----
+    if (mode === "anchor") {
+      const fresh = store.get(run.runId) as Run;
+      const pending = fresh.anchors.filter((a: any) => a.anchorIndex === null && !a.note);
+      if (pending.length) {
+        const pin = fresh.before.blocks.find((b: any) => b.type === "table" && b.text.includes("Pin"));
+        return fauxAssistantMessage(
+          [fauxToolCall("pickAnchor", {
+            commentNumber: pending[0].commentNumber,
+            blockIndex: pin ? pin.index : 0,
+            evidence: "baud rate belongs to the wiring pin table (scripted resolver)",
+          })],
+          { stopReason: "toolUse" }
+        );
+      }
+      return fauxAssistantMessage([fauxToolCall("completeAnchoring", {})], { stopReason: "toolUse" });
+    }
     // ---- distinct COMPLETION session: writeRunSummary then completeRun ----
     if (currentTaskId === "DONE") {
       const fresh = store.get(run.runId) as Run;
@@ -91,12 +118,14 @@ async function main() {
       // step 2: write verdicts from the evidence the agent collected
       const calls = task.commentNumbers.map((n) => {
         const anchor = fresh.anchors.find((a) => a.commentNumber === n)!;
+        const end = anchor.sectionEnd ?? anchor.anchorIndex ?? 0;
         const hunk =
           anchor.anchorIndex === null
             ? undefined
-            : fresh.diff.find(
-                (h) => h.beforeIndex === anchor.anchorIndex || h.afterIndex === anchor.anchorIndex
-              );
+            : fresh.diff.find((h) => {
+                const bi = h.beforeIndex ?? h.afterIndex;
+                return bi !== undefined && bi >= anchor.anchorIndex! && bi <= end;
+              });
         const verdict = !anchor || anchor.anchorIndex === null ? "needs_user"
           : hunk ? "correctly_applied" : "missing";
         return fauxToolCall("writeResult", {
@@ -123,8 +152,12 @@ async function main() {
   // ---- execute the run ----
   let totalToolCalls = 0;
   let splitSeen = -1;
+  let anchorStart = -1;
+  let anchorLlm = -1;
   const done = await executeRun(store, run, config, {
-    onSplit: (n) => { splitSeen = n; console.log(`✓ deterministic split: ${n} verify tasks (no planner session, no layout tasks)`); },
+    onAnchorStart: (pending) => { mode = "anchor"; anchorStart = pending; console.log(`→ ANCHOR resolver started (${pending} unresolved)`); },
+    onAnchorDone: (llm, tc) => { anchorLlm = llm; totalToolCalls += tc; console.log(`✓ anchor resolver done (${llm} LLM-anchored, ${tc} tool calls through pi)`); },
+    onSplit: (n) => { mode = "tasks"; splitSeen = n; console.log(`✓ deterministic split: ${n} verify tasks (no planner session, no layout tasks)`); },
     onCompleteStart: () => { currentTaskId = "DONE"; console.log("→ DONE started (completion agent — after ALL tasks)"); },
     onCompleteDone: (tc, by) => { totalToolCalls += tc; console.log(`✓ completion done (${by}) (${tc} tool calls through pi)`); },
     onTaskStart: (id) => { currentTaskId = id; console.log(`→ ${id} started`); },
@@ -137,16 +170,22 @@ async function main() {
   // deterministic split: 4 comments → exactly 1 task holding all 4
   if (splitSeen !== 1) fail(`expected split 1 verify task, got ${splitSeen}`);
   if (done.tasks.length !== 1) fail(`expected 1 task, got ${done.tasks.length}`);
-  if (done.tasks[0].commentNumbers.length !== 4) fail("task must hold all 4 comments");
-  console.log(`✓ deterministic split: T1 = comments [${done.tasks[0].commentNumbers.join(",")}]`);
+  if (done.tasks[0].commentNumbers.length !== 5) fail("task must hold all 5 comments");
+  if (anchorStart !== 1) fail(`expected 1 pending anchor for the resolver, got ${anchorStart}`);
+  if (anchorLlm !== 1) fail(`expected 1 LLM anchor, got ${anchorLlm}`);
+  if (done.summary.anchoredCount !== 5) fail(`expected 5 anchored after resolver, got ${done.summary.anchoredCount}`);
+  if (done.summary.anchorMethods.llm !== 1 || done.summary.anchorMethods.section !== 4)
+    fail(`expected anchorMethods {section:4, llm:1}, got ${JSON.stringify(done.summary.anchorMethods)}`);
+  console.log(`✓ deterministic split: T1 = comments [${done.tasks[0].commentNumbers.join(",")}] · anchorMethods ${JSON.stringify(done.summary.anchorMethods)}`);
 
   const results = done.tasks[0].results;
-  if (results.length !== 4) fail(`expected 4 verdicts, got ${results.length}`);
+  if (results.length !== 5) fail(`expected 5 verdicts, got ${results.length}`);
   const expected: Record<number, string> = {
-    1: "correctly_applied",
-    2: "missing",       // fixture: comment 2 was NEVER applied by the humans
-    3: "correctly_applied",
-    4: "correctly_applied",
+    1: "correctly_applied",  // section "1" anchor, edit inside section window
+    2: "missing",            // section 6.3, NO edit in window
+    3: "correctly_applied",  // table in 6.2, exact block anchor
+    4: "correctly_applied",  // section 7.1, edit inside window
+    5: "missing",            // LLM anchor (pin table), no edit — provenance rides along
   };
   for (const [n, v] of Object.entries(expected)) {
     const r = results.find((x) => x.commentNumber === Number(n));

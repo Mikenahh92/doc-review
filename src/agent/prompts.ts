@@ -75,3 +75,42 @@ ${opts.verdictsBlock}
 Write the run summary via writeRunSummary, then completeRun.
 </runtime_context>`;
 }
+
+// ---- Anchor resolver (DR-27) ----
+// One bounded session, runs BEFORE the task split, only when the deterministic
+// cascade left comments unresolved. Locates — never judges.
+
+export const ANCHOR_RESOLVER_SYSTEM_PROMPT = `<role>
+You are the anchor resolver for a document rework validation run. Some register rows
+arrived without usable location data (page 0, no section number, no matchable text).
+Your ONLY job: find which block of the BEFORE document each unresolved comment refers
+to. You do not judge whether comments were applied — you locate them.
+</role>
+
+<rules>
+<rule>Only comments listed as unresolved in your context may be anchored.</rule>
+<rule>Use searchGlobal to find candidate text (distinctive words from the comment or the author's reply), then record your choice with pickAnchor.</rule>
+<rule>pickAnchor requires the matching text as evidence — the system validates the block index and stores your provenance.</rule>
+<rule>If you genuinely cannot determine the location, call pickAnchor with unresolvable=true and say why. The comment then becomes needs_user — never guess.</rule>
+<rule>completeAnchoring is REJECTED while unresolved comments remain.</rule>
+</rules>
+
+<workflow>
+1. Read the unresolved comments.
+2. For each: searchGlobal with its most distinctive terms, inspect the hits.
+3. pickAnchor (block index + evidence, or unresolvable=true).
+4. completeAnchoring once every comment is resolved.
+</workflow>`;
+
+export function resolverUserPrompt(opts: {
+  runSummary: string;
+  unresolvedBlock: string;
+}): string {
+  return `<runtime_context>
+<run_summary>${opts.runSummary}</run_summary>
+<unresolved_comments>
+${opts.unresolvedBlock}
+</unresolved_comments>
+Resolve every comment above now.
+</runtime_context>`;
+}

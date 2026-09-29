@@ -41,6 +41,7 @@ export function reportJson(run: Run): object {
       after: run.summary.docSummaryAfter,
       diff_hunks: run.summary.hunkCount,
       comments: { total: run.comments.length, anchored: run.summary.anchoredCount, verdicts: counts },
+      anchor_methods: run.summary.anchorMethods,
     },
     verdict: rollupVerdict(run),
     comment_verdicts: results,

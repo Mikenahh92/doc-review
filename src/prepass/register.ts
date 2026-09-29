@@ -34,7 +34,7 @@ export function parseRegister(buffer: Buffer): CommentRecord[] {
       documentTitle: pick(row, ["document", "documenttitle"]),
       page: parseInt(pick(row, ["pagenumber", "page"]), 10) || 0,
       locationType: pick(row, ["location", "locationtype"]),
-      locationNumber: parseInt(pick(row, ["locationnumber"]), 10) || 1,
+      locationNumber: pick(row, ["locationnumber", "sectionnumber"]), // "6.2" etc — kept verbatim, sometimes empty
       comment: pick(row, ["comment"]),
       commentType: pick(row, ["commenttype", "type"]),
       replyByAuthor: pick(row, ["replybyauthor", "reply"]),

@@ -7,17 +7,20 @@
 
 import type { Store } from "./store.js";
 import type { Run, Task } from "./types.js";
-import { buildCompleterTools, buildVerifierTools } from "./agent/tools.js";
+import { buildCompleterTools, buildVerifierTools, buildAnchorTools } from "./agent/tools.js";
 import {
   COMPLETER_SYSTEM_PROMPT,
   completerUserPrompt,
   VERIFIER_SYSTEM_PROMPT,
   verifierUserPrompt,
+  ANCHOR_RESOLVER_SYSTEM_PROMPT,
+  resolverUserPrompt,
 } from "./agent/prompts.js";
 import { spawnAgent, type RuntimeConfig } from "./agent/runtime.js";
 import { renderReport, rollupVerdict } from "./report.js";
 
 const MAX_COMMENTS_PER_TASK = 10;
+const esc = (x: string) => x.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const MAX_RETRIES = 1;
 
 /**
@@ -50,7 +53,7 @@ function commentsBlock(run: Run, task: Task): string {
         `<comment number="${c.number}" page="${c.page}" location="${c.locationType}" location_number="${c.locationNumber}" type="${c.commentType}" status="${c.status}" processed="${c.processed}">`,
         `  <text>${c.comment}</text>`,
         `  <reply_by_author>${c.replyByAuthor || "(blank — deduce intent from comment)"}</reply_by_author>`,
-        `  <anchor method="${a.method}" block_index="${a.anchorIndex ?? "null"}"/>`,
+        `  <anchor method="${a.method}" block_index="${a.anchorIndex ?? "null"}"${a.sectionEnd !== undefined ? ` section_end="${a.sectionEnd}"` : ""}${a.note ? ` note="${esc(a.note)}"` : ""}/>`,
         `</comment>`,
       ].join("\n");
     })
@@ -58,6 +61,8 @@ function commentsBlock(run: Run, task: Task): string {
 }
 
 export interface RunEvents {
+  onAnchorStart?: (pending: number) => void;
+  onAnchorDone?: (llmAnchored: number, toolCalls: number) => void;
   onSplit?: (verifyTasks: number) => void;
   onTaskStart?: (taskId: string) => void;
   onTaskDone?: (taskId: string, toolCalls: number) => void;
@@ -74,6 +79,40 @@ export async function executeRun(
 ): Promise<Run> {
   run.status = "running";
   store.save(run);
+
+  // ---- ANCHOR RESOLUTION (DR-27): bounded LLM fallback for comments the
+  // deterministic cascade (heading map / TOC / content / diff match) could not
+  // anchor. Runs ONCE, before the split; pickAnchor is validated + persisted. ----
+  const pendingAnchors = run.anchors.filter((a) => a.anchorIndex === null && !a.note);
+  if (pendingAnchors.length > 0) {
+    events.onAnchorStart?.(pendingAnchors.length);
+    const unresolvedBlock = pendingAnchors
+      .map((a) => {
+        const c = run.comments.find((x) => x.number === a.commentNumber)!;
+        return [
+          `<comment number="${c.number}" page="${c.page}" location="${c.locationType}" location_number="${c.locationNumber || "(none)"}">`,
+          `  <text>${c.comment}</text>`,
+          `  <reply_by_author>${c.replyByAuthor || "(blank — deduce intent from comment)"}</reply_by_author>`,
+          `</comment>`,
+        ].join("\n");
+      })
+      .join("\n");
+    const anchorOutcome = await spawnAgent({
+      systemPrompt: ANCHOR_RESOLVER_SYSTEM_PROMPT,
+      userPrompt: resolverUserPrompt({
+        runSummary: `${run.summary.docSummaryBefore} · ${run.before.blocks.length} blocks · ${run.summary.hunkCount} diff hunks vs after`,
+        unresolvedBlock,
+      }),
+      tools: buildAnchorTools({ store, run, task: null as any }),
+      config,
+      onToolCall: (name, args) => store.logToolCall(run.runId, "ANCHOR", { tool: name, args }),
+    });
+    events.onAnchorDone?.(
+      run.anchors.filter((a) => a.method === "llm").length,
+      anchorOutcome.toolCallsMade
+    );
+    store.save(run);
+  }
 
   // ---- DETERMINISTIC SPLIT (DR-25: no planner agent — chunks of 10 comments /
   // 6 rules, constructed, never negotiated). Idempotent: an empty task list only. ----
