@@ -1,0 +1,487 @@
+{
+  "blocks": 3887,
+  "pages": 87,
+  "editedSubs": 18,
+  "comments": [
+    {
+      "n": 1,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 0,
+      "strict": true
+    },
+    {
+      "n": 2,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 1,
+      "strict": true
+    },
+    {
+      "n": 3,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 2,
+      "strict": true
+    },
+    {
+      "n": 4,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 3,
+      "strict": true
+    },
+    {
+      "n": 5,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 4,
+      "strict": true
+    },
+    {
+      "n": 6,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 5,
+      "strict": true
+    },
+    {
+      "n": 7,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 6,
+      "strict": true
+    },
+    {
+      "n": 8,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 7,
+      "strict": true
+    },
+    {
+      "n": 9,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 8,
+      "strict": true
+    },
+    {
+      "n": 10,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 9,
+      "strict": true
+    },
+    {
+      "n": 11,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 10,
+      "strict": true
+    },
+    {
+      "n": 12,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 11,
+      "strict": true
+    },
+    {
+      "n": 13,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 12,
+      "strict": true
+    },
+    {
+      "n": 14,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 13,
+      "strict": true
+    },
+    {
+      "n": 15,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 14,
+      "strict": true
+    },
+    {
+      "n": 16,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 15,
+      "strict": true
+    },
+    {
+      "n": 17,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 16,
+      "strict": true
+    },
+    {
+      "n": 18,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 17,
+      "strict": true
+    },
+    {
+      "n": 19,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 18,
+      "strict": true
+    },
+    {
+      "n": 20,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 19,
+      "strict": true
+    },
+    {
+      "n": 21,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 20,
+      "strict": true
+    },
+    {
+      "n": 22,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 21,
+      "strict": true
+    },
+    {
+      "n": 23,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 22,
+      "strict": true
+    },
+    {
+      "n": 24,
+      "group": "A",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 23,
+      "strict": true
+    },
+    {
+      "n": 25,
+      "group": "B",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 24,
+      "strict": true
+    },
+    {
+      "n": 26,
+      "group": "B",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 25,
+      "strict": true
+    },
+    {
+      "n": 27,
+      "group": "B",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 26,
+      "strict": true
+    },
+    {
+      "n": 28,
+      "group": "B",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 27,
+      "strict": true
+    },
+    {
+      "n": 29,
+      "group": "B",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 28,
+      "strict": true
+    },
+    {
+      "n": 30,
+      "group": "B",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 29,
+      "strict": true
+    },
+    {
+      "n": 31,
+      "group": "B",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 30,
+      "strict": true
+    },
+    {
+      "n": 32,
+      "group": "B",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 31,
+      "strict": true
+    },
+    {
+      "n": 33,
+      "group": "C",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 32,
+      "strict": true
+    },
+    {
+      "n": 34,
+      "group": "C",
+      "expectAnchor": "section",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 33,
+      "strict": true
+    },
+    {
+      "n": 35,
+      "group": "C",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 34,
+      "strict": true
+    },
+    {
+      "n": 36,
+      "group": "C",
+      "expectAnchor": "section",
+      "expectVerdict": "missing",
+      "targetSub": 35,
+      "strict": true
+    },
+    {
+      "n": 37,
+      "group": "D",
+      "expectAnchor": "content",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 0,
+      "strict": true
+    },
+    {
+      "n": 38,
+      "group": "D",
+      "expectAnchor": "content",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 2,
+      "strict": true
+    },
+    {
+      "n": 39,
+      "group": "D",
+      "expectAnchor": "content",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 4,
+      "strict": true
+    },
+    {
+      "n": 40,
+      "group": "D",
+      "expectAnchor": "content",
+      "expectVerdict": "missing",
+      "targetSub": 3,
+      "strict": true
+    },
+    {
+      "n": 41,
+      "group": "D",
+      "expectAnchor": "content",
+      "expectVerdict": "missing",
+      "targetSub": 5,
+      "strict": true
+    },
+    {
+      "n": 42,
+      "group": "D",
+      "expectAnchor": "content",
+      "expectVerdict": "missing",
+      "targetSub": 7,
+      "strict": true
+    },
+    {
+      "n": 43,
+      "group": "E",
+      "expectAnchor": "content",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 6,
+      "strict": true
+    },
+    {
+      "n": 44,
+      "group": "E",
+      "expectAnchor": "content",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 8,
+      "strict": true
+    },
+    {
+      "n": 45,
+      "group": "E",
+      "expectAnchor": "content",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 10,
+      "strict": true
+    },
+    {
+      "n": 46,
+      "group": "E",
+      "expectAnchor": "content",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 12,
+      "strict": true
+    },
+    {
+      "n": 47,
+      "group": "F",
+      "expectAnchor": "content",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 14,
+      "strict": true
+    },
+    {
+      "n": 48,
+      "group": "F",
+      "expectAnchor": "content",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 16,
+      "strict": true
+    },
+    {
+      "n": 49,
+      "group": "F",
+      "expectAnchor": "content",
+      "expectVerdict": "missing",
+      "targetSub": 15,
+      "strict": true
+    },
+    {
+      "n": 50,
+      "group": "F",
+      "expectAnchor": "content",
+      "expectVerdict": "missing",
+      "targetSub": 17,
+      "strict": true
+    },
+    {
+      "n": 51,
+      "group": "F",
+      "expectAnchor": "content",
+      "expectVerdict": "missing",
+      "targetSub": 19,
+      "strict": true
+    },
+    {
+      "n": 52,
+      "group": "G",
+      "expectAnchor": "llm",
+      "expectVerdict": "missing",
+      "targetSub": 20,
+      "strict": false
+    },
+    {
+      "n": 53,
+      "group": "G",
+      "expectAnchor": "llm",
+      "expectVerdict": "missing",
+      "targetSub": 21,
+      "strict": false
+    },
+    {
+      "n": 54,
+      "group": "G",
+      "expectAnchor": "llm",
+      "expectVerdict": "correctly_applied",
+      "targetSub": 18,
+      "strict": false
+    },
+    {
+      "n": 55,
+      "group": "G",
+      "expectAnchor": "llm",
+      "expectVerdict": "missing",
+      "targetSub": 22,
+      "strict": false
+    },
+    {
+      "n": 56,
+      "group": "G",
+      "expectAnchor": "llm",
+      "expectVerdict": "missing",
+      "targetSub": 23,
+      "strict": false
+    },
+    {
+      "n": 57,
+      "group": "H",
+      "expectAnchor": "failed",
+      "expectVerdict": "needs_user",
+      "targetSub": -1,
+      "strict": false
+    },
+    {
+      "n": 58,
+      "group": "H",
+      "expectAnchor": "failed",
+      "expectVerdict": "needs_user",
+      "targetSub": -1,
+      "strict": false
+    },
+    {
+      "n": 59,
+      "group": "H",
+      "expectAnchor": "failed",
+      "expectVerdict": "needs_user",
+      "targetSub": -1,
+      "strict": false
+    },
+    {
+      "n": 60,
+      "group": "H",
+      "expectAnchor": "failed",
+      "expectVerdict": "needs_user",
+      "targetSub": -1,
+      "strict": false
+    }
+  ]
+}

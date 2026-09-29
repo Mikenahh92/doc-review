@@ -24,18 +24,33 @@ function typeMatch(locationType: string, blockType: string): boolean {
   return lt === "paragraph" || lt === "line" || lt === "requirement";
 }
 
-/** Distinctive tokens (≥4 chars) of comment + author reply, minus stopwords. */
+/** Document frequency of a token across before-blocks + diff afterTexts.
+ *  Diff matching only trusts RARE tokens: "thermal monitor" appears in hundreds
+ *  of blocks — a shared hit proves nothing. Unique-ish tokens (≤3 occurrences)
+ *  actually identify a location (DR-28). */
 const STOP = new Set([
   "this", "that", "with", "from", "shall", "must", "have", "been", "here", "there",
   "into", "your", "them", "then", "than", "when", "what", "which", "where", "added",
   "please", "value", "text", "some", "also", "only", "needs", "need", "make", "made",
   "document", "sentence", "version", "setting", "section",
 ]);
-function distinctive(c: CommentRecord): string[] {
+function buildDf(before: ParsedDoc, diff: DiffHunk[]): Map<string, number> {
+  const df = new Map<string, number>();
+  const bump = (text: string) => {
+    for (const w of new Set(text.toLowerCase().split(/[^a-z0-9.]+/))) {
+      if (w.length >= 4 && !STOP.has(w)) df.set(w, (df.get(w) ?? 0) + 1);
+    }
+  };
+  for (const b of before.blocks) bump(b.text);
+  for (const h of diff) bump(h.afterText ?? "");
+  return df;
+}
+
+function distinctive(c: CommentRecord, df: Map<string, number>): string[] {
   const words = `${c.comment} ${c.replyByAuthor}`
     .toLowerCase()
     .split(/[^a-z0-9.]+/)
-    .filter((w) => w.length >= 4 && !STOP.has(w));
+    .filter((w) => w.length >= 4 && !STOP.has(w) && (df.get(w) ?? Infinity) <= 3);
   return [...new Set(words)];
 }
 
@@ -46,6 +61,7 @@ export function anchorComments(
 ): CommentAnchor[] {
   const headingMap = buildHeadingMap(before);
   const { bodyStart } = parseToc(before);
+  const df = buildDf(before, diff);
 
   return comments.map((c) => {
     const sec = (c.locationNumber ?? "").trim();
@@ -82,22 +98,27 @@ export function anchorComments(
       }
     }
 
-    // ---- Tier 2a: content match against before-doc (outside the TOC region) ----
-    const fragments = [c.replyByAuthor, c.comment]
-      .flatMap((s) => s.split(/[.;:]\s+/))
-      .map((s) => s.trim())
-      .filter((s) => s.length >= 15)
-      .sort((a, b) => b.length - a.length);
-    for (const frag of fragments) {
-      const hit = before.blocks.find(
-        (b) => b.index >= bodyStart &&
-          b.text.toLowerCase().includes(frag.slice(0, 40).toLowerCase())
-      );
-      if (hit) return { commentNumber: c.number, anchorIndex: hit.index, method: "content" };
+    // ---- Tier 2a: n-gram window match against before-doc (outside the TOC region).
+    // Reviewers quote the text they refer to, embedded mid-comment — so sentence
+    // prefixes never match. Instead: slide word windows over comment+reply; any
+    // 8..6-word window found verbatim in a block pins that block. ----
+    const words = `${c.comment} ${c.replyByAuthor}`
+      .replace(/[""'']/g, " ")
+      .toLowerCase()
+      .split(/[^a-z0-9±%.]+/)
+      .filter(Boolean);
+    let hit: typeof before.blocks[number] | undefined;
+    for (const size of [8, 7, 6]) {
+      if (hit || words.length < size) continue;
+      for (let i = 0; i + size <= words.length && !hit; i++) {
+        const win = words.slice(i, i + size).join(" ");
+        hit = before.blocks.find((b) => b.index >= bodyStart && b.text.toLowerCase().includes(win));
+      }
     }
+    if (hit) return { commentNumber: c.number, anchorIndex: hit.index, method: "content" };
 
     // ---- Tier 2b: distinctive tokens shared with a diff hunk's afterText ----
-    const tokens = distinctive(c);
+    const tokens = distinctive(c, df);
     if (tokens.length) {
       const scored = diff
         .map((h) => {
