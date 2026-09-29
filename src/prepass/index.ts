@@ -4,6 +4,7 @@ import { parseDocx } from "./docx.js";
 import { parseMarkdown } from "./markdown.js";
 import { parsePdf } from "./pdf.js";
 import { assertExportScope, parseRegister } from "./register.js";
+import { parseRuleset } from "../ruleset.js";
 import { diffDocs } from "./diff.js";
 import { anchorComments } from "./anchor.js";
 import type { CommentRecord, Finding, ParsedDoc, Run, RunSummary } from "../types.js";
@@ -43,7 +44,8 @@ export async function buildRun(
   beforeBuffer: Buffer,
   afterBuffer: Buffer,
   registerBuffer: Buffer,
-  fileNames: { before: string; after: string; register: string }
+  fileNames: { before: string; after: string; register: string },
+  rulesetMarkdown?: string
 ): Promise<{ run: Run; warnings: string[] }> {
   const parse = async (name: string, buf: Buffer) => {
     if (name.toLowerCase().endsWith(".md")) return parseMarkdown(name, buf);
@@ -56,6 +58,15 @@ export async function buildRun(
   const warnings = assertExportScope(comments);
   const diff = diffDocs(before, after);
   const anchors = anchorComments(comments, before);
+
+  // Ruleset: parsed + snapshotted verbatim at run start. A malformed ruleset is a
+  // hard error — better to refuse the run than validate against a half-read ruleset.
+  let ruleset: Run["ruleset"] = null;
+  if (rulesetMarkdown && rulesetMarkdown.trim()) {
+    const parsed = parseRuleset(rulesetMarkdown);
+    if (!parsed.ruleset) throw new Error(`ruleset invalid: ${parsed.errors.join("; ")}`);
+    ruleset = parsed.ruleset;
+  }
 
   const summary: RunSummary = {
     docSummaryBefore: docSummary(before),
@@ -76,6 +87,7 @@ export async function buildRun(
     diff,
     comments,
     anchors,
+    ruleset,
     summary,
     autoChecks: autoDocChecks(before, after),
     tasks: [],
