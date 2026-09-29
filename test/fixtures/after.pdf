@@ -1,0 +1,46 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 674 >>
+stream
+BT
+/F1 11 Tf
+14 TL
+72 760 Td
+(Product specification for the data acquisition unit.) Tj T*
+(The enclosure shall be sealed against water ingress and dust according to IP67.) Tj T*
+(Operating temperature range is -20 to +60 degrees Celsius.) Tj T*
+(The sensor shall report measurements every 100 milliseconds.) Tj T*
+(Maintenance: the unit must be serviced annually by qualified personnel.) Tj T*
+(Firmware version 2.x or later is required for this product.) Tj T*
+(Accuracy of the measurement chain is ±5 % \(full scale\).) Tj T*
+(The unit connects via RS-485 at 115200 baud.) Tj T*
+(Storage temperature range is -30 to +70 degrees Celsius.) Tj T*
+(End of document.) Tj T*
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1036
+%%EOF
