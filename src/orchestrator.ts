@@ -44,6 +44,26 @@ export function planTasksDeterministic(run: Run): void {
   run.status = "planned";
 }
 
+/** Compact per-page index of one document: "p.N (blocks X–Y, count) · first heading or preview". */
+function docPageIndex(label: string, blocks: Run["before"]["blocks"]): string {
+  const byPage = new Map<number, Run["before"]["blocks"]>();
+  for (const b of blocks) {
+    const list = byPage.get(b.pageEstimate) ?? ([] as any);
+    list.push(b);
+    byPage.set(b.pageEstimate, list as any);
+  }
+  const pages = [...byPage.keys()].sort((a, b) => a - b);
+  const lines = pages.map((p) => {
+    const list = byPage.get(p)!;
+    const heading = list.find((b) => b.type === "heading");
+    const preview = heading
+      ? `H: ${heading.text.slice(0, 70)}`
+      : list[0].text.slice(0, 70);
+    return `p.${p} (${list.length} blk, #${list[0].index}–#${list[list.length - 1].index}): ${preview}`;
+  });
+  return `<index doc="${label}" pages="${pages.length}" blocks="${blocks.length}">\n${lines.join("\n")}\n</index>`;
+}
+
 function commentsBlock(run: Run, task: Task): string {
   return task.commentNumbers
     .map((n) => {
@@ -141,6 +161,7 @@ export async function executeRun(
           const userPrompt = verifierUserPrompt({
             runSummary: `${run.summary.docSummaryBefore} → ${run.summary.docSummaryAfter}; ${run.summary.hunkCount} diff hunks`,
             taskTitle: `${task.title} (${task.taskId})`,
+            docIndexes: `${docPageIndex("before", run.before.blocks)}\n${docPageIndex("after", run.after.blocks)}`,
             commentsBlock: commentsBlock(run, task),
           });
           const outcome = await spawnAgent({

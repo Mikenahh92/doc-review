@@ -36,15 +36,19 @@ You never edit anything. You produce verdicts with evidence. Work exclusively th
 export function verifierUserPrompt(opts: {
   runSummary: string;
   taskTitle: string;
+  docIndexes: string;
   commentsBlock: string;
 }): string {
   return `<runtime_context>
 <run_summary>${opts.runSummary}</run_summary>
 <task>${opts.taskTitle}</task>
+<document_indexes>
+${opts.docIndexes}
+</document_indexes>
 <comments_in_scope>
 ${opts.commentsBlock}
 </comments_in_scope>
-Follow your workflow. Use the tools. Every comment number above must end up with exactly one writeResult.
+The document_indexes above list every page of both documents (page · block count · first heading/preview). Use them to navigate directly with getChunk(doc, page, start, count) — no need to call getOverview just to learn the layout. Every comment number above must end up with exactly one writeResult.
 </runtime_context>`;
 }
 
