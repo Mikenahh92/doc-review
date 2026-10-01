@@ -44,7 +44,7 @@ export function planTasksDeterministic(run: Run): void {
   run.status = "planned";
 }
 
-/** Compact per-page index of one document: "p.N (blocks X–Y, count) · first heading or preview". */
+/** Structured XML page index of one document: <Page n="1" range="0-4"><h>..</h><p>preview..</p></Page> */
 function docPageIndex(label: string, blocks: Run["before"]["blocks"]): string {
   const byPage = new Map<number, Run["before"]["blocks"]>();
   for (const b of blocks) {
@@ -53,15 +53,18 @@ function docPageIndex(label: string, blocks: Run["before"]["blocks"]): string {
     byPage.set(b.pageEstimate, list as any);
   }
   const pages = [...byPage.keys()].sort((a, b) => a - b);
-  const lines = pages.map((p) => {
+  const pageEls = pages.map((p) => {
     const list = byPage.get(p)!;
-    const heading = list.find((b) => b.type === "heading");
-    const preview = heading
-      ? `H: ${heading.text.slice(0, 70)}`
-      : list[0].text.slice(0, 70);
-    return `p.${p} (${list.length} blk, #${list[0].index}–#${list[list.length - 1].index}): ${preview}`;
+    const body = list
+      .map((b) =>
+        b.type === "heading"
+          ? `  <h>${esc(b.text.slice(0, 80))}</h>`
+          : `  <p>${esc(b.text.slice(0, 60))}</p>`
+      )
+      .join("\n");
+    return `<Page n="${p}" blocks="${list.length}" range="#${list[0].index}-#${list[list.length - 1].index}">\n${body}\n</Page>`;
   });
-  return `<index doc="${label}" pages="${pages.length}" blocks="${blocks.length}">\n${lines.join("\n")}\n</index>`;
+  return `<index doc="${label}" pages="${pages.length}" blocks="${blocks.length}">\n${pageEls.join("\n")}\n</index>`;
 }
 
 function commentsBlock(run: Run, task: Task): string {
