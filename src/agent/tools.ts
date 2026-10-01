@@ -55,13 +55,6 @@ function hunksNear(ctx: Ctx, n: number) {
   return { anchor, hunks: near };
 }
 
-function excerpt(blocks: Run["before"]["blocks"], center: number | null, radius = 2) {
-  if (center === null) return [];
-  return blocks
-    .filter((b) => b.index >= center - radius && b.index <= center + radius)
-    .map((b) => ({ index: b.index, type: b.type, text: b.text.slice(0, 400) }));
-}
-
 function getOverview(ctx: Ctx): AgentTool<any> {
   return {
     name: "getOverview",

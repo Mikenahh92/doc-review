@@ -191,7 +191,7 @@ app.get("/api/runs/:id/report.html", (req, res) => {
 });
 
 
-// ---- comment detail (wireframe screen 3): register row + anchor + before/after excerpts ----
+// ---- comment detail (wireframe screen 3): register row + anchor ----
 app.get("/api/runs/:id/comments/:num", (req, res) => {
   const run = store.get(req.params.id);
   if (!run) return res.status(404).json({ error: "unknown run" });
