@@ -56,11 +56,14 @@ function docPageIndex(label: string, blocks: Run["before"]["blocks"]): string {
   const pageEls = pages.map((p) => {
     const list = byPage.get(p)!;
     const body = list
-      .map((b) =>
-        b.type === "heading"
-          ? `  <h>${esc(b.text.slice(0, 80))}</h>`
-          : `  <p>${esc(b.text.slice(0, 60))}</p>`
-      )
+      .map((b) => {
+        if (b.type === "heading") return `  <h>${esc(b.text.slice(0, 80))}</h>`;
+        if (b.type === "table")
+          return b.tableCols !== undefined
+            ? `  <table cols="${b.tableCols}" rows="${b.tableRows ?? 0}"/>`
+              : `  <table words="${b.text.split(/\s+/).length}"/>`;
+        return `  <p words="${b.text.split(/\s+/).length}"/>`;
+      })
       .join("\n");
     return `<Page n="${p}" blocks="${list.length}" range="#${list[0].index}-#${list[list.length - 1].index}">\n${body}\n</Page>`;
   });

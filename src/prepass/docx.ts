@@ -33,10 +33,15 @@ export function parseDocx(fileName: string, buffer: Buffer): ParsedDoc {
     const tok = m[0];
     if (tok.startsWith("<w:tbl")) {
       const text = (tok.match(PARAGRAPH_RE) ?? []).map(paraText).filter(Boolean).join(" | ");
+      const trs = tok.match(/<w:tr[ >]/g) ?? [];
+      const firstTr = tok.match(/<w:tr[ >][\s\S]*?<\/w:tr>/)?.[0] ?? "";
+      const cols = (firstTr.match(/<w:tc>/g) ?? []).length;
       blocks.push({
         index: blocks.length,
         type: "table",
         text: text || "(empty table)",
+        tableCols: cols,
+        tableRows: trs.length,
         pageEstimate: Math.floor(blocks.length / 45) + 1,
       });
     } else {

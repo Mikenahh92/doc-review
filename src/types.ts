@@ -37,6 +37,8 @@ export interface DocBlock {
   type: "paragraph" | "table" | "heading";
   text: string;
   pageEstimate: number;      // rough page attribution (blocks/45 heuristic)
+  tableCols?: number;        // tables: column count
+  tableRows?: number;        // tables: row count (excl. separator rows)
 }
 
 export interface ParsedDoc {

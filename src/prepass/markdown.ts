@@ -18,8 +18,9 @@ export function parseMarkdown(fileName: string, buffer: Buffer): ParsedDoc {
   const flushTbl = () => {
     if (!tbl.length) return;
     const rows = tbl.filter((r) => !/^\|[\s:|-]+\|?$/.test(r)); // drop |---|---| separators
+    const cols = rows[0] ? rows[0].replace(/^\||\|$/g, "").split("|").length : 0;
     const text = rows.map((r) => r.replace(/^\||\|$/g, "").trim()).join(" | ");
-    blocks.push({ index: blocks.length, type: "table", text, pageEstimate: page });
+    blocks.push({ index: blocks.length, type: "table", text, pageEstimate: page, tableCols: cols, tableRows: rows.length });
     tbl = [];
   };
   for (const raw of lines) {
