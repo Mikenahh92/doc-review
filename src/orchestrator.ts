@@ -65,7 +65,7 @@ function docPageIndex(label: string, blocks: Run["before"]["blocks"]): string {
         return `  <p words="${b.text.split(/\s+/).length}"/>`;
       })
       .join("\n");
-    return `<Page n="${p}" blocks="${list.length}" range="#${list[0].index}-#${list[list.length - 1].index}">\n${body}\n</Page>`;
+    return `<Page n="${p}" blocks="${list.length}">\n${body}\n</Page>`;
   });
   return `<index doc="${label}" pages="${pages.length}" blocks="${blocks.length}">\n${pageEls.join("\n")}\n</index>`;
 }
