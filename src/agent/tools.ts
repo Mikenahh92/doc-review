@@ -118,29 +118,31 @@ function getDiff(ctx: Ctx): AgentTool<any> {
 function getChunk(ctx: Ctx): AgentTool<any> {
   return {
     name: "getChunk",
-    label: "Read document blocks",
-    description: `Read a consecutive range of blocks from the before- or after-review document by block index. The comment's anchor (from getOverview/getDiff) is a hint for where to start — NOT the truth: a comment may apply to other areas too. Use searchGlobal to find all locations, getChunk to read any of them.`,
+    label: "Read document blocks by page",
+    description: `Read blocks of the before- or after-review document on a given PAGE. Pages are the stable identity: PDF parsing stamps real page numbers, and markdown converted from PDF keeps page markers. start/count select consecutive blocks WITHIN that page (start is an offset in the page, 0-based). The comment's anchor/register page is a hint where to start — a comment may apply to other pages too.`,
     parameters: Type.Object({
       doc: Type.Union([Type.Literal("before"), Type.Literal("after")], { description: "Which document to read" }),
-      start: Type.Integer({ minimum: 0, description: "First block index to return" }),
-      count: Type.Optional(Type.Integer({ default: 5, minimum: 1, maximum: 20 })),
+      page: Type.Integer({ minimum: 1, description: "Page number" }),
+      start: Type.Optional(Type.Integer({ default: 0, minimum: 0, description: "Offset of the first block within the page" })),
+      count: Type.Optional(Type.Integer({ default: 10, minimum: 1, maximum: 30 })),
     }),
     execute: async (_id, p: any) => {
       const run = getRun(ctx);
       const blocks = p.doc === "before" ? run.before.blocks : run.after.blocks;
-      const end = Math.min(p.start + (p.count ?? 5), blocks.length);
-      if (p.start >= blocks.length) {
+      const onPage = blocks.filter((b) => b.pageEstimate === p.page);
+      const totalPages = Math.max(...blocks.map((b) => b.pageEstimate));
+      if (!onPage.length) {
         return {
-          content: xml(`<chunk doc="${p.doc}" start="${p.start}" blocks="0" total="${blocks.length}">start out of range — valid indices are 0..${blocks.length - 1}</chunk>`),
+          content: xml(`<chunk doc="${p.doc}" page="${p.page}" blocks="0" pages="${totalPages}">no blocks on this page — valid pages are 1..${totalPages}</chunk>`),
           details: {},
         };
       }
-      const rows = blocks
-        .filter((b) => b.index >= p.start && b.index < end)
+      const slice = onPage.slice(p.start ?? 0, (p.start ?? 0) + (p.count ?? 10));
+      const rows = slice
         .map((b) => `  [block ${b.index} | ${b.type}] ${one(b.text)}`)
         .join("\n");
       return {
-        content: xml(`<chunk doc="${p.doc}" start="${p.start}" end="${end - 1}" total="${blocks.length}">\n${rows}\n</chunk>`),
+        content: xml(`<chunk doc="${p.doc}" page="${p.page}" pageBlocks="${onPage.length}" offset="${p.start ?? 0}" pages="${totalPages}">\n${rows}\n</chunk>`),
         details: {},
       };
     },
@@ -151,16 +153,16 @@ function searchGlobal(ctx: Ctx): AgentTool<any> {
   return {
     name: "searchGlobal",
     label: "Search both documents",
-    description: "Search a text fragment across BOTH documents; returns matches with block index and document.",
+    description: "Search a text fragment across BOTH documents; returns matches with document, page, and block index — use the page with getChunk.",
     parameters: Type.Object({ query: Type.String({ minLength: 3 }) }),
     execute: async (_id, p: any) => {
       const run = getRun(ctx);
       const q = p.query.toLowerCase();
       const hits = (doc: string, blocks: Run["before"]["blocks"]) =>
         blocks.filter((b) => b.text.toLowerCase().includes(q)).slice(0, 5)
-          .map((b) => ({ doc, index: b.index, type: b.type, text: b.text.slice(0, 200) }));
+          .map((b) => ({ doc, index: b.index, page: b.pageEstimate, type: b.type, text: b.text.slice(0, 200) }));
       const matches = [...hits("before", run.before.blocks), ...hits("after", run.after.blocks)];
-      const rows = matches.map((m) => `  [${m.doc} #${m.index} | ${m.type}] ${one(m.text)}`).join("\n");
+      const rows = matches.map((m) => `  [${m.doc} p.${m.page} #${m.index} | ${m.type}] ${one(m.text)}`).join("\n");
       return {
         content: xml(`<search query="${esc(p.query)}" matches="${matches.length}">\n${rows}\n</search>`),
         details: {},

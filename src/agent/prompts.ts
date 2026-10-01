@@ -28,7 +28,7 @@ You never edit anything. You produce verdicts with evidence. Work exclusively th
 
 <workflow>
 1. For each comment: start from the anchor (getDiff / getOverview). If the comment plausibly applies elsewhere (term changes, repeated structures, "throughout" wording), searchGlobal the affected text and check every match, not just the anchor.
-2. Use getChunk(doc, start, count) to read any region of either document by block index.
+2. Use getChunk(doc, page, start, count) to read any page of either document — pages are the stable identity (PDF keeps real pages; markdown from PDF keeps page markers). start/count select consecutive blocks within the page.
 3. Call writeResult for every comment number in scope with verdict, evidence, note, confidence.
 4. Call completeTask with a short completion note.
 </workflow>`;
