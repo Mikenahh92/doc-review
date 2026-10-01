@@ -44,10 +44,6 @@ function commentByNumber(ctx: Ctx, n: number) {
   return c;
 }
 
-function anchorOf(ctx: Ctx, n: number) {
-  return getRun(ctx).anchors.find((a) => a.commentNumber === n);
-}
-
 /** Diff hunks near a comment's anchor (before-index within ±3), or hunks mentioning anchor text. */
 function hunksNear(ctx: Ctx, n: number) {
   const run = getRun(ctx);
@@ -119,38 +115,32 @@ function getDiff(ctx: Ctx): AgentTool<any> {
   };
 }
 
-function excerptTool(ctx: Ctx, which: "before" | "after"): AgentTool<any> {
+function getChunk(ctx: Ctx): AgentTool<any> {
   return {
-    name: which === "before" ? "getOriginalExcerpt" : "getReviewedExcerpt",
-    label: which === "before" ? "Before-review excerpt" : "After-review excerpt",
-    description: `Blocks around the comment's anchor in the ${which}-review document.`,
+    name: "getChunk",
+    label: "Read document blocks",
+    description: `Read a consecutive range of blocks from the before- or after-review document by block index. The comment's anchor (from getOverview/getDiff) is a hint for where to start — NOT the truth: a comment may apply to other areas too. Use searchGlobal to find all locations, getChunk to read any of them.`,
     parameters: Type.Object({
-      commentNumber: Type.Integer(),
-      radius: Type.Optional(Type.Integer({ default: 2, minimum: 0, maximum: 6 })),
+      doc: Type.Union([Type.Literal("before"), Type.Literal("after")], { description: "Which document to read" }),
+      start: Type.Integer({ minimum: 0, description: "First block index to return" }),
+      count: Type.Optional(Type.Integer({ default: 5, minimum: 1, maximum: 20 })),
     }),
     execute: async (_id, p: any) => {
       const run = getRun(ctx);
-      commentByNumber(ctx, p.commentNumber);
-      const anchor = anchorOf(ctx, p.commentNumber);
-      if (!anchor || anchor.anchorIndex === null) {
+      const blocks = p.doc === "before" ? run.before.blocks : run.after.blocks;
+      const end = Math.min(p.start + (p.count ?? 5), blocks.length);
+      if (p.start >= blocks.length) {
         return {
-          content: xml(`<excerpt comment="${p.commentNumber}">anchoring failed — return needs_user for this comment</excerpt>`),
+          content: xml(`<chunk doc="${p.doc}" start="${p.start}" blocks="0" total="${blocks.length}">start out of range — valid indices are 0..${blocks.length - 1}</chunk>`),
           details: {},
         };
       }
-      const blocks = which === "before" ? run.before.blocks : run.after.blocks;
-      // after-doc: if a hunk replaced this anchor, show around the hunk's after-index instead
-      let center = anchor.anchorIndex;
-      if (which === "after") {
-        const { hunks } = hunksNear(ctx, p.commentNumber);
-        const h = hunks.find((x) => x.afterIndex !== undefined);
-        if (h && h.afterIndex !== undefined) center = h.afterIndex;
-      }
-      const rows = excerpt(blocks, center, p.radius ?? 2)
+      const rows = blocks
+        .filter((b) => b.index >= p.start && b.index < end)
         .map((b) => `  [block ${b.index} | ${b.type}] ${one(b.text)}`)
         .join("\n");
       return {
-        content: xml(`<excerpt comment="${p.commentNumber}" doc="${which}" radius="${p.radius ?? 2}" center="${center}">\n${rows}\n</excerpt>`),
+        content: xml(`<chunk doc="${p.doc}" start="${p.start}" end="${end - 1}" total="${blocks.length}">\n${rows}\n</chunk>`),
         details: {},
       };
     },
@@ -293,8 +283,7 @@ export function buildVerifierTools(ctx: Ctx): AgentTool<any>[] {
   return [
     getOverview(ctx),
     getDiff(ctx),
-    excerptTool(ctx, "before"),
-    excerptTool(ctx, "after"),
+    getChunk(ctx),
     searchGlobal(ctx),
     writeResult(ctx),
     completeTask(ctx),
