@@ -17,6 +17,8 @@ h3{font-size:13px;color:#223;margin-bottom:8px}
 .up{border:2px dashed #b6bfd2;border-radius:8px;padding:14px;margin-bottom:10px;font-size:12px;color:#556;cursor:pointer}
 .up:hover{border-color:#4a90d9}
 .up.filled{border-style:solid;border-color:#4a90d9;background:#f0f6ff}
+.up.bad{border-color:#c0392b;background:#fdf1f0}
+.up.bad .meta{color:#c0392b;font-weight:600}
 .up b{display:block;font-size:13px;color:#223;margin-bottom:2px}
 .up input{display:none}
 .btn{background:#2f6fb0;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer}
@@ -98,14 +100,17 @@ let listRuns=[];
 async function refreshList(){try{listRuns=await api("/api/runs");if(view==="list"&&!showNew)render()}catch(e){}}
 const OKEXT={before:["docx","pdf","md"],after:["docx","pdf","md"],register:["xlsx"]};
 function handleFile(id,el,f){
-    if(!f){el.classList.remove("filled");el.dataset.has="";return}
-    const ext=f.name.split(".").pop().toLowerCase();
-    if(!OKEXT[id].includes(ext)){el.classList.remove("filled");el.dataset.has="";
-      el.querySelector(".meta").textContent=`unsupported .${ext} — expected ${OKEXT[id].join(" / ")}`;
-      toast(`.${ext} not supported for ${id} (use ${OKEXT[id].join(" / ")})`);return}
+    if(!f){el.classList.remove("filled","bad");el.dataset.has="";el.dataset.bad="";return}
+    /* never drop the user's selection — wrong type shows red + blocks the run instead of clearing */
     const dt=new DataTransfer();dt.items.add(f);el.querySelector("input").files=dt.files;
-    el.classList.add("filled");el.querySelector(".meta").textContent=f.name+" · "+(f.size/1024).toFixed(0)+" KB ✓";
-    el.dataset.has="1"}
+    const ext=f.name.split(".").pop().toLowerCase();
+    el.classList.add("filled");el.dataset.has="1";
+    if(!OKEXT[id].includes(ext)){
+      el.classList.add("bad");el.dataset.bad="1";
+      el.querySelector(".meta").textContent=`${f.name} · .${ext} not supported here — expected ${OKEXT[id].join(" / ")}`;
+      toast(`.${ext} not supported for ${id} (use ${OKEXT[id].join(" / ")})`);return}
+    el.classList.remove("bad");el.dataset.bad="";
+    el.querySelector(".meta").textContent=f.name+" · "+(f.size/1024).toFixed(0)+" KB ✓"}
 function pick(id){const el=$("#"+id);
   el.onclick=e=>{if(e.target.tagName!=="INPUT")el.querySelector("input").click()};
   el.querySelector("input").onchange=e=>handleFile(id,el,e.target.files[0]);
@@ -115,6 +120,7 @@ function pick(id){const el=$("#"+id);
 async function newRun(){
   const need=[["before","original"],["after","reviewed"],["register","comments register"]];
   for(const[id,n]of need)if(!$("#"+id).dataset.has)return toast("select the "+n+" file first");
+  for(const[id,n]of need)if($("#"+id).dataset.bad)return toast(n+" slot has an unsupported file type — see the red box");
   const b64=f=>new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result.split(",")[1]);fr.readAsDataURL(f)});
   const g=id=>$("#"+id).querySelector("input").files[0];
   $("#newMsg").textContent="uploading + pre-pass…";
