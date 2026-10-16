@@ -5,3 +5,4 @@ runs-test
 uploads
 settings.json
 *.log
+test/video-out/
