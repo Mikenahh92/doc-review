@@ -75,6 +75,29 @@ npm start           # API + UI on :3000
 - `GET /api/runs/:id/report.html` · `/api/runs/:id/export.json` · `/api/runs/:id/transcript/:taskId`
 - `GET/PUT /api/settings` · `GET /api/settings/models`
 
+## On-site quickstart (local Ollama)
+
+Fresh image from CI on every master push: `ghcr.io/mikenahh92/doc-review:latest` (also tagged per commit SHA).
+
+```sh
+# on a connected machine, export for transfer (no registry access needed on site)
+podman save --format oci-archive ghcr.io/mikenahh92/doc-review:latest -o doc-review.tar
+# on site: load + run against a local Ollama server
+podman load -i doc-review.tar
+podman run -d --name doc-review -p 3000:3000 \
+  -e MODEL_MODE=ollama \
+  -e MODEL_BASE_URL=http://host.containers.internal:11434/v1 \
+  -e MODEL_ID=<ollama-model-id> \
+  -v doc-review-runs:/app/runs ghcr.io/mikenahh92/doc-review:latest
+```
+
+Docker users: replace `host.containers.internal` with `host.docker.internal`.
+
+Model note: the verifier sessions rely on tool calling. Verify the chosen Ollama model supports
+the OpenAI-compatible tools API before judging results — test with `ollama show <model>` and a
+small document pair first. Tool-capable local models (e.g. llama3.1/qwen-class) are the safe
+baseline if the Gemma build available on site lacks tool templates.
+
 ## Benchmark
 
 `test/fixtures/bench/` contains a 60-page document pair + 25-comment register with mixed edit
