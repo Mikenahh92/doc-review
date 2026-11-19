@@ -167,18 +167,18 @@ async function main() {
 
   // ---- assertions ----
   if (done.status !== "done") fail(`run status ${done.status}`);
-  // deterministic split: 4 comments → exactly 1 task holding all 4
-  if (splitSeen !== 1) fail(`expected split 1 verify task, got ${splitSeen}`);
-  if (done.tasks.length !== 1) fail(`expected 1 task, got ${done.tasks.length}`);
-  if (done.tasks[0].commentNumbers.length !== 5) fail("task must hold all 5 comments");
+  // deterministic split (DR-32: one task per comment): 5 comments → 5 tasks
+  if (splitSeen !== 5) fail(`expected split into 5 verify tasks, got ${splitSeen}`);
+  if (done.tasks.length !== 5) fail(`expected 5 tasks, got ${done.tasks.length}`);
+  if (done.tasks.some((t) => t.commentNumbers.length !== 1)) fail("every task must hold exactly 1 comment");
   if (anchorStart !== 1) fail(`expected 1 pending anchor for the resolver, got ${anchorStart}`);
   if (anchorLlm !== 1) fail(`expected 1 LLM anchor, got ${anchorLlm}`);
   if (done.summary.anchoredCount !== 5) fail(`expected 5 anchored after resolver, got ${done.summary.anchoredCount}`);
   if (done.summary.anchorMethods.llm !== 1 || done.summary.anchorMethods.section !== 4)
     fail(`expected anchorMethods {section:4, llm:1}, got ${JSON.stringify(done.summary.anchorMethods)}`);
-  console.log(`✓ deterministic split: T1 = comments [${done.tasks[0].commentNumbers.join(",")}] · anchorMethods ${JSON.stringify(done.summary.anchorMethods)}`);
+  console.log(`✓ deterministic split: ${done.tasks.length} tasks, 1 comment each · anchorMethods ${JSON.stringify(done.summary.anchorMethods)}`);
 
-  const results = done.tasks[0].results;
+  const results = done.tasks.flatMap((t) => t.results);
   if (results.length !== 5) fail(`expected 5 verdicts, got ${results.length}`);
   const expected: Record<number, string> = {
     1: "correctly_applied",  // section "1" anchor, edit inside section window

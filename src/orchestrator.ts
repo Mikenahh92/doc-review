@@ -2,7 +2,8 @@
 // sessions (one pi session per task), guards, auto-resume failed tasks, deterministic
 // verdict rollup.
 //
-// DR-26: planning is deterministic code only — verify_comments tasks of ≤10 comments
+// DR-26: planning is deterministic code only — one verify task per comment
+// (DR-32: was chunks of ≤10; per-comment tasks isolate retries and context)
 // in register order. No planner agent, no styling/layout validation (out of scope).
 
 import type { Store } from "./store.js";
@@ -19,13 +20,13 @@ import {
 import { spawnAgent, type RuntimeConfig } from "./agent/runtime.js";
 import { renderReport, rollupVerdict } from "./report.js";
 
-const MAX_COMMENTS_PER_TASK = 10;
+const MAX_COMMENTS_PER_TASK = 1; // DR-32: one task per comment
 const esc = (x: string) => x.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const MAX_RETRIES = 1;
 
 /**
- * Deterministic split: verify tasks = consecutive chunks of ≤10 comments in
- * document (register) order. Task ids: T1..Tn.
+ * Deterministic split: one verify task per comment, in document (register)
+ * order. Task ids: T1..Tn. (DR-32: was consecutive chunks of ≤10.)
  */
 export function planTasksDeterministic(run: Run): void {
   const tasks: Task[] = [];
@@ -34,7 +35,7 @@ export function planTasksDeterministic(run: Run): void {
     const nums = comments.slice(i, i + MAX_COMMENTS_PER_TASK).map((c) => c.number);
     tasks.push({
       taskId: `T${tasks.length + 1}`,
-      title: `Verify comments ${nums[0]}–${nums[nums.length - 1]}`,
+      title: `Verify comment ${nums[0]}`,
       commentNumbers: nums,
       status: "todo",
       results: [],
@@ -140,7 +141,7 @@ export async function executeRun(
     store.save(run);
   }
 
-  // ---- DETERMINISTIC SPLIT (verify chunks of ≤10 comments, constructed,
+  // ---- DETERMINISTIC SPLIT (one verify task per comment, constructed,
   // never negotiated). Idempotent: fills an empty task list only. ----
   if (run.tasks.length === 0) {
     planTasksDeterministic(run);

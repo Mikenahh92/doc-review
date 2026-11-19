@@ -1,5 +1,5 @@
 // System prompts — XML-tag style: verifier + completer.
-// Planning is deterministic code (verify chunks of ≤10 comments) — no planning
+// Planning is deterministic code (one verify task per comment, DR-32) — no planning
 // session. Each session ends with guarded completion.
 
 export const VERIFIER_SYSTEM_PROMPT = `<role>
